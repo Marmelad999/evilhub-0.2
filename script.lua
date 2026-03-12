@@ -1,4 +1,4 @@
---// EvilHub 0.3
+--// EvilHub 0.3 fix
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -381,6 +381,8 @@ local function detectChest(model)
 
 	local rarity = chestRarity[part.BrickColor.Name]
 	if not rarity then return end
+
+	registerChest(rarity.name)
 	-------------------------------------------------
 -- CHEST NOTIFICATIONS
 -------------------------------------------------
@@ -739,15 +741,27 @@ DamageLabel.TextColor3 = Color3.new(1,1,1)
 DamageLabel.Parent = Frame
 
 PopupRemote.OnClientEvent:Connect(function(...)
+
 	local args = {...}
+
 	local damage = args[3]
-	local color = args[5]
+	local color
+
+	for _,v in ipairs(args) do
+		if typeof(v) == "Color3" then
+			color = v
+			break
+		end
+	end
+
 	if typeof(damage) == "number" then
 		DamageLabel.Text = "Last Hit: "..damage
 	end
-	if typeof(color) == "Color3" then
+
+	if color then
 		DamageLabel.TextColor3 = color
 	end
+
 end)
 
 -------------------------------------------------
@@ -774,13 +788,13 @@ local chestRarities = {
 }
 
 local chestColors = {
-	COMMON = Color3.fromRGB(90,90,90),
-	UNCOMMON = Color3.fromRGB(60,170,90),
-	RARE = Color3.fromRGB(65,105,225),
-	EPIC = Color3.fromRGB(197,75,140),
-	LEGENDARY = Color3.fromRGB(205,127,50),
-	MYTHIC = Color3.fromRGB(128,0,0),
-	CURSED = Color3.fromRGB(15,15,15)
+	COMMON = Color3.fromRGB(140,140,140),
+	UNCOMMON = Color3.fromRGB(80,255,120),
+	RARE = Color3.fromRGB(90,150,255),
+	EPIC = Color3.fromRGB(255,110,210),
+	LEGENDARY = Color3.fromRGB(255,200,60),
+	MYTHIC = Color3.fromRGB(255,60,60),
+	CURSED = Color3.fromRGB(255,80,80)
 }
 
 local chestCount = {}
@@ -816,6 +830,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
