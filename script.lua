@@ -1,10 +1,10 @@
--- Rayfield
+-- Rayfield UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Combat Dev Tool",
     LoadingTitle = "Loading",
-    LoadingSubtitle = "Rayfield UI",
+    LoadingSubtitle = "Rayfield",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "CombatDev",
@@ -37,15 +37,31 @@ local Settings = {
     Debug = false,
 
     Range = 25,
-    HitsPerTarget = 5,
-    AttackDelay = 0.1
+    HitsPerTarget = 3,
+    AttackDelay = 0.15
 }
 
--- Debug printer
+local combo = 1
+
+-- Debug
 local function debugPrint(...)
     if Settings.Debug then
         print("[AutoAttack]", ...)
     end
+end
+
+-- Direction calculator
+local function getDirection(targetHRP)
+
+    local dir = (targetHRP.Position - hrp.Position).Unit
+
+    return string.format(
+        "%.2f:%.2f:%.2f",
+        dir.X,
+        dir.Y,
+        dir.Z
+    )
+
 end
 
 -- Get targets
@@ -65,10 +81,7 @@ local function getTargets()
                 local distance = (mobHRP.Position - hrp.Position).Magnitude
 
                 if distance <= Settings.Range then
-                    table.insert(targets, {
-                        id = mobId,
-                        distance = distance
-                    })
+                    table.insert(targets, model)
                 end
 
             end
@@ -81,17 +94,23 @@ local function getTargets()
 
 end
 
--- Get closest target
-local function getClosestTarget(targets)
+-- Closest target
+local function getClosest(targets)
 
-    local closest = nil
-    local minDist = math.huge
+    local closest
+    local dist = math.huge
 
     for _, target in ipairs(targets) do
 
-        if target.distance < minDist then
-            minDist = target.distance
-            closest = target
+        local thrp = target:FindFirstChild("HumanoidRootPart")
+
+        if thrp then
+            local d = (thrp.Position - hrp.Position).Magnitude
+
+            if d < dist then
+                dist = d
+                closest = target
+            end
         end
 
     end
@@ -100,11 +119,32 @@ local function getClosestTarget(targets)
 
 end
 
--- Attack function
-local function attackTarget(id)
+-- Attack sequence
+local function attackTarget(target)
 
-    for i = 1, Settings.HitsPerTarget do
-        AttackRemote:FireServer(1,1,{id})
+    local mobId = target:GetAttribute("ID")
+    local thrp = target:FindFirstChild("HumanoidRootPart")
+
+    if not mobId or not thrp then return end
+
+    local direction = getDirection(thrp)
+
+    debugPrint("Attacking ID:", mobId)
+
+    AttackRemote:FireServer(5, combo, {mobId})
+    task.wait()
+
+    AttackRemote:FireServer(3, combo)
+    task.wait()
+
+    AttackRemote:FireServer(4, combo, direction)
+    task.wait()
+
+    AttackRemote:FireServer(1, combo)
+
+    combo += 1
+    if combo > 2 then
+        combo = 1
     end
 
 end
@@ -118,33 +158,35 @@ task.spawn(function()
 
             local targets = getTargets()
 
-            debugPrint("Targets found:", #targets)
+            debugPrint("Targets:", #targets)
 
             if #targets > 0 then
 
-                -- Kill Aura (attack all)
                 if Settings.KillAura then
 
                     for _, target in ipairs(targets) do
-                        attackTarget(target.id)
-                        debugPrint("KillAura attacking:", target.id)
+                        for i = 1, Settings.HitsPerTarget do
+                            attackTarget(target)
+                        end
                     end
 
-                -- Smart target (closest only)
                 elseif Settings.SmartTarget then
 
-                    local closest = getClosestTarget(targets)
+                    local closest = getClosest(targets)
 
                     if closest then
-                        attackTarget(closest.id)
-                        debugPrint("SmartTarget attacking:", closest.id)
+                        for i = 1, Settings.HitsPerTarget do
+                            attackTarget(closest)
+                        end
                     end
 
-                -- Normal mode
                 else
 
-                    attackTarget(targets[1].id)
-                    debugPrint("Attacking:", targets[1].id)
+                    local target = targets[1]
+
+                    for i = 1, Settings.HitsPerTarget do
+                        attackTarget(target)
+                    end
 
                 end
 
@@ -178,7 +220,7 @@ CombatTab:CreateToggle({
 })
 
 CombatTab:CreateToggle({
-    Name = "Smart Target (Closest)",
+    Name = "Smart Target",
     CurrentValue = false,
     Callback = function(state)
         Settings.SmartTarget = state
@@ -195,36 +237,36 @@ CombatTab:CreateToggle({
 
 CombatTab:CreateSlider({
     Name = "Attack Range",
-    Range = {5, 150},
+    Range = {5,150},
     Increment = 1,
     CurrentValue = 25,
-    Callback = function(value)
-        Settings.Range = value
+    Callback = function(v)
+        Settings.Range = v
     end
 })
 
 CombatTab:CreateSlider({
     Name = "Hits Per Target",
-    Range = {1, 100},
+    Range = {1,20},
     Increment = 1,
-    CurrentValue = 5,
-    Callback = function(value)
-        Settings.HitsPerTarget = value
+    CurrentValue = 3,
+    Callback = function(v)
+        Settings.HitsPerTarget = v
     end
 })
 
 CombatTab:CreateSlider({
     Name = "Attack Delay",
-    Range = {0.01, 1},
-    Increment = 0.01,
-    CurrentValue = 0.1,
-    Callback = function(value)
-        Settings.AttackDelay = value
+    Range = {0.05,1},
+    Increment = 0.05,
+    CurrentValue = 0.15,
+    Callback = function(v)
+        Settings.AttackDelay = v
     end
 })
 
 Rayfield:Notify({
     Title = "Loaded",
-    Content = "Combat system ready",
+    Content = "Auto Attack ready",
     Duration = 5
 })
