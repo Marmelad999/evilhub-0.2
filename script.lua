@@ -168,28 +168,6 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- MOB ESP SCANNER
--------------------------------------------------
-
-task.spawn(function()
-
-	while true do
-
-		if MobESP then
-
-			for _,mob in ipairs(Characters:GetChildren()) do
-				addMobESP(mob)
-			end
-
-		end
-
-		task.wait(0.5)
-
-	end
-
-end)
-
--------------------------------------------------
 -- ESP CREATION (HP VERSION)
 -------------------------------------------------
 
@@ -280,6 +258,28 @@ local function addMobESP(mob)
 	end
 
 end
+
+-------------------------------------------------
+-- MOB ESP SCANNER
+-------------------------------------------------
+
+task.spawn(function()
+
+	while true do
+
+		if MobESP then
+
+			for _,mob in ipairs(Characters:GetChildren()) do
+				addMobESP(mob)
+			end
+
+		end
+
+		task.wait(0.5)
+
+	end
+
+end)
 
 local function enableMobESP()
 
@@ -379,6 +379,8 @@ local function detectChest(model)
 
 	if not part then return end
 
+	local rarity = chestRarity[part.BrickColor.Name]
+	if not rarity then return end
 	-------------------------------------------------
 -- CHEST NOTIFICATIONS
 -------------------------------------------------
@@ -659,5 +661,6 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
