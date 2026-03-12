@@ -47,6 +47,22 @@ local MobESPObjects = {}
 local MiscESPObjects = {}
 
 -------------------------------------------------
+-- CHEST RARITY DATA
+-------------------------------------------------
+
+local chestRarity = {
+
+	["Dark stone grey"] = {name = "COMMON", color = Color3.fromRGB(90,90,90)},
+	["Earth green"] = {name = "UNCOMMON", color = Color3.fromRGB(60,170,90)},
+	["Dark Royal blue"] = {name = "RARE", color = Color3.fromRGB(65,105,225)},
+	["Mulberry"] = {name = "EPIC", color = Color3.fromRGB(197,75,140)},
+	["CGA brown"] = {name = "LEGENDARY", color = Color3.fromRGB(205,127,50)},
+	["Maroon"] = {name = "MYTHIC", color = Color3.fromRGB(128,0,0)},
+	["Really black"] = {name = "CURSED", color = Color3.fromRGB(15,15,15)}
+
+}
+
+-------------------------------------------------
 -- RESPAWN
 -------------------------------------------------
 
@@ -284,21 +300,97 @@ Characters.ChildRemoved:Connect(function(mob)
 
 end)
 -------------------------------------------------
--- MISC ESP (Highlight Version)
+-- MISC ESP + CHEST RARITY
 -------------------------------------------------
 
 local miscColors = {
 	Ruby = Color3.fromRGB(220,20,60),
 	GoldBag = Color3.fromRGB(255,0,255),
-	Chest = Color3.fromRGB(255,215,0),
-	SecretChest = Color3.fromRGB(170,0,255),
 	ChallengeRug = Color3.fromRGB(0,200,255),
 	EXPBook = Color3.fromRGB(0,255,120)
 }
 
+-------------------------------------------------
+-- CHEST BILLBOARD
+-------------------------------------------------
+
+local function createChestBillboard(part, rarityName, color)
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ChestRarityESP"
+	gui.Size = UDim2.new(0,140,0,30)
+	gui.StudsOffset = Vector3.new(0,4,0)
+	gui.AlwaysOnTop = true
+	gui.MaxDistance = 999999
+	gui.Adornee = part
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1,0,1,0)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.GothamBlack
+	label.TextSize = 14
+	label.Text = rarityName
+	label.TextColor3 = color
+	label.TextStrokeTransparency = 0.3
+	label.Parent = gui
+
+	gui.Parent = part
+
+	return gui
+
+end
+
+-------------------------------------------------
+-- CHEST DETECTION
+-------------------------------------------------
+
+local function detectChest(model)
+
+	if MiscESPObjects[model] then return end
+
+	local down = model:FindFirstChild("Down")
+	local up = model:FindFirstChild("Up")
+
+	local part = down or up
+	if not part then return end
+
+	local rarity = chestRarity[part.BrickColor.Name]
+	if not rarity then return end
+
+	-- Billboard
+	local billboard = createChestBillboard(part, rarity.name, rarity.color)
+
+	-- Highlight
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "ChestESP"
+	highlight.FillColor = rarity.color
+	highlight.FillTransparency = 0.5
+	highlight.OutlineColor = rarity.color
+	highlight.OutlineTransparency = 0
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Adornee = model
+	highlight.Parent = model
+
+	MiscESPObjects[model] = {
+		billboard = billboard,
+		highlight = highlight
+	}
+
+end
+
+-------------------------------------------------
+-- MISC OBJECT ESP
+-------------------------------------------------
+
 local function addMiscESP(obj)
 
 	if not MiscESP then return end
+
+	-- CHEST ESP
+	if obj.Name == "Chest" or obj.Name == "SecretChest" then
+		detectChest(obj)
+		return
+	end
 
 	local color = miscColors[obj.Name]
 	if not color then return end
@@ -321,6 +413,10 @@ local function addMiscESP(obj)
 
 end
 
+-------------------------------------------------
+-- ENABLE / DISABLE
+-------------------------------------------------
+
 local function enableMiscESP()
 
 	for _,obj in ipairs(Tower:GetDescendants()) do
@@ -331,15 +427,33 @@ end
 
 local function disableMiscESP()
 
-	for _,esp in pairs(MiscESPObjects) do
-		if esp then
-			esp:Destroy()
+	for obj,data in pairs(MiscESPObjects) do
+
+		if typeof(data) == "table" then
+
+			if data.billboard then
+				data.billboard:Destroy()
+			end
+
+			if data.highlight then
+				data.highlight:Destroy()
+			end
+
+		else
+
+			data:Destroy()
+
 		end
+
 	end
 
 	table.clear(MiscESPObjects)
 
 end
+
+-------------------------------------------------
+-- OBJECT SPAWN
+-------------------------------------------------
 
 Tower.DescendantAdded:Connect(function(obj)
 	addMiscESP(obj)
@@ -347,13 +461,31 @@ end)
 
 Tower.DescendantRemoving:Connect(function(obj)
 
-	if MiscESPObjects[obj] then
-		MiscESPObjects[obj]:Destroy()
+	local data = MiscESPObjects[obj]
+
+	if data then
+
+		if typeof(data) == "table" then
+
+			if data.billboard then
+				data.billboard:Destroy()
+			end
+
+			if data.highlight then
+				data.highlight:Destroy()
+			end
+
+		else
+
+			data:Destroy()
+
+		end
+
 		MiscESPObjects[obj] = nil
+
 	end
 
 end)
-
 -------------------------------------------------
 -- UI
 -------------------------------------------------
@@ -447,6 +579,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
