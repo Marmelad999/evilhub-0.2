@@ -1,9 +1,9 @@
---// EvilHub 0.27
+--// EvilHub 0.3
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.27",
+	Name = "EvilHub 0.3",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -655,12 +655,168 @@ VisualTab:CreateToggle({
 })
 
 -------------------------------------------------
+-- HUD UI (Vertical, Full Chest Rarities)
+-------------------------------------------------
+
+local PopupRemote = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("PopupDamage")
+local playerGui = player:WaitForChild("PlayerGui")
+
+local Hud = Instance.new("ScreenGui")
+Hud.Name = "EvilHUD"
+Hud.ResetOnSpawn = false
+Hud.Parent = playerGui
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0,220,0,250)
+Frame.Position = UDim2.new(0,20,0,100)
+Frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Frame.BackgroundTransparency = 0.15
+Frame.Parent = Hud
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0,8)
+Corner.Parent = Frame
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(80,80,80)
+Stroke.Thickness = 1.5
+Stroke.Parent = Frame
+
+local Layout = Instance.new("UIListLayout")
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.Padding = UDim.new(0,4)
+Layout.Parent = Frame
+
+-------------------------------------------------
+-- TITLE
+-------------------------------------------------
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1,0,0,20)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.Text = "Dungeon Monitor"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Parent = Frame
+
+-------------------------------------------------
+-- TIMER
+-------------------------------------------------
+
+local TimerLabel = Instance.new("TextLabel")
+TimerLabel.Size = UDim2.new(1,0,0,18)
+TimerLabel.BackgroundTransparency = 1
+TimerLabel.Font = Enum.Font.Gotham
+TimerLabel.TextSize = 13
+TimerLabel.TextColor3 = Color3.fromRGB(200,200,200)
+TimerLabel.Text = "Time: 00:00"
+TimerLabel.Parent = Frame
+
+local startTime = os.clock()
+
+task.spawn(function()
+	while true do
+		local elapsed = math.floor(os.clock() - startTime)
+		local minutes = math.floor(elapsed / 60)
+		local seconds = elapsed % 60
+		TimerLabel.Text = string.format("Time: %02d:%02d",minutes,seconds)
+		task.wait(1)
+	end
+end)
+
+-------------------------------------------------
+-- DAMAGE MONITOR
+-------------------------------------------------
+
+local DamageLabel = Instance.new("TextLabel")
+DamageLabel.Size = UDim2.new(1,0,0,18)
+DamageLabel.BackgroundTransparency = 1
+DamageLabel.Font = Enum.Font.GothamBold
+DamageLabel.TextSize = 14
+DamageLabel.Text = "Last Hit: 0"
+DamageLabel.TextColor3 = Color3.new(1,1,1)
+DamageLabel.Parent = Frame
+
+PopupRemote.OnClientEvent:Connect(function(...)
+	local args = {...}
+	local damage = args[3]
+	local color = args[5]
+	if typeof(damage) == "number" then
+		DamageLabel.Text = "Last Hit: "..damage
+	end
+	if typeof(color) == "Color3" then
+		DamageLabel.TextColor3 = color
+	end
+end)
+
+-------------------------------------------------
+-- CHEST COUNT
+-------------------------------------------------
+
+local ChestTitle = Instance.new("TextLabel")
+ChestTitle.Size = UDim2.new(1,0,0,18)
+ChestTitle.BackgroundTransparency = 1
+ChestTitle.Font = Enum.Font.GothamBold
+ChestTitle.TextSize = 13
+ChestTitle.Text = "Chests Found"
+ChestTitle.TextColor3 = Color3.new(1,1,1)
+ChestTitle.Parent = Frame
+
+local chestRarities = {
+	"COMMON",
+	"UNCOMMON",
+	"RARE",
+	"EPIC",
+	"LEGENDARY",
+	"MYTHIC",
+	"CURSED"
+}
+
+local chestColors = {
+	COMMON = Color3.fromRGB(90,90,90),
+	UNCOMMON = Color3.fromRGB(60,170,90),
+	RARE = Color3.fromRGB(65,105,225),
+	EPIC = Color3.fromRGB(197,75,140),
+	LEGENDARY = Color3.fromRGB(205,127,50),
+	MYTHIC = Color3.fromRGB(128,0,0),
+	CURSED = Color3.fromRGB(15,15,15)
+}
+
+local chestCount = {}
+local chestLabels = {}
+
+for _,rarity in ipairs(chestRarities) do
+	chestCount[rarity] = 0
+	local lbl = Instance.new("TextLabel")
+	lbl.Size = UDim2.new(1,0,0,16)
+	lbl.BackgroundTransparency = 1
+	lbl.Font = Enum.Font.Gotham
+	lbl.TextSize = 13
+	lbl.TextColor3 = chestColors[rarity]
+	lbl.Text = rarity.." - 0"
+	lbl.Parent = Frame
+	chestLabels[rarity] = lbl
+end
+
+local function registerChest(rarity)
+	if chestCount[rarity] then
+		chestCount[rarity] += 1
+		local lbl = chestLabels[rarity]
+		if lbl then
+			lbl.Text = rarity.." - "..chestCount[rarity]
+		end
+	end
+end
+
+-------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.27",
+	Title = "EvilHub 0.3",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
