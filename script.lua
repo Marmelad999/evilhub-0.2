@@ -1,4 +1,4 @@
-```lua
+
 --// AutoAttack Script
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
@@ -166,3 +166,4 @@ Rayfield:Notify({
 	Duration = 5
 })
 ```
+
