@@ -1,4 +1,4 @@
---// EvilHub 0.3 fix 3
+--// EvilHub 0.3 fuck this
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -669,7 +669,7 @@ Hud.ResetOnSpawn = false
 Hud.Parent = playerGui
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0,220,0,250)
+Frame.Size = UDim2.new(0,220,0,70)
 Frame.Position = UDim2.new(0,20,0,100)
 Frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 Frame.BackgroundTransparency = 0.15
@@ -726,122 +726,6 @@ task.spawn(function()
 		task.wait(1)
 	end
 end)
-
--------------------------------------------------
--- DAMAGE MONITOR
--------------------------------------------------
-
-local DamageLabel = Instance.new("TextLabel")
-DamageLabel.Size = UDim2.new(1,0,0,18)
-DamageLabel.BackgroundTransparency = 1
-DamageLabel.Font = Enum.Font.GothamBold
-DamageLabel.TextSize = 14
-DamageLabel.Text = "Last Hit: 0"
-DamageLabel.TextColor3 = Color3.new(1,1,1)
-DamageLabel.Parent = Frame
-
--------------------------------------------------
--- DAMAGE HOOK (WORKING VERSION)
--------------------------------------------------
-
-local mt = getrawmetatable(game)
-local old = mt.__namecall
-setreadonly(mt,false)
-
-mt.__namecall = newcclosure(function(self,...)
-
-	local args = {...}
-	local method = getnamecallmethod()
-
-	if tostring(self) == "PopupDamage" and method == "Fire" then
-
-		local damage = args[3]
-		local color = args[4]
-
-		if typeof(damage) == "number" and damage > 0 then
-
-			DamageLabel.Text = "Last Hit: "..damage
-
-			if typeof(color) == "Color3" then
-				DamageLabel.TextColor3 = color
-			end
-
-		end
-
-	end
-
-	return old(self,...)
-
-end)
-
-setreadonly(mt,true)
-
--------------------------------------------------
--- CHEST COUNT
--------------------------------------------------
-
-local ChestTitle = Instance.new("TextLabel")
-ChestTitle.Size = UDim2.new(1,0,0,18)
-ChestTitle.BackgroundTransparency = 1
-ChestTitle.Font = Enum.Font.GothamBold
-ChestTitle.TextSize = 13
-ChestTitle.Text = "Chests Found"
-ChestTitle.TextColor3 = Color3.new(1,1,1)
-ChestTitle.Parent = Frame
-
-local chestRarities = {
-	"EPIC",
-	"LEGENDARY",
-	"MYTHIC",
-	"CURSED"
-}
-
-local chestColors = {
-	EPIC = Color3.fromRGB(255,110,210),
-	LEGENDARY = Color3.fromRGB(255,200,60),
-	MYTHIC = Color3.fromRGB(255,60,60),
-	CURSED = Color3.fromRGB(255,80,80)
-}
-
-local chestCount = {}
-local chestLabels = {}
-
-for _,rarity in ipairs(chestRarities) do
-	chestCount[rarity] = 0
-
-	local lbl = Instance.new("TextLabel")
-	lbl.Size = UDim2.new(1,0,0,16)
-	lbl.BackgroundTransparency = 1
-	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 13
-	lbl.TextStrokeTransparency = 0.5
-	lbl.TextStrokeColor3 = Color3.new(0,0,0)
-	lbl.TextColor3 = chestColors[rarity]
-	lbl.Text = rarity.." - 0"
-	lbl.Parent = Frame
-
-	chestLabels[rarity] = lbl
-end
-
-function registerChest(rarity)
-
-	if rarity == "COMMON" then return end
-	if rarity == "UNCOMMON" then return end
-	if rarity == "RARE" then return end
-
-	if chestCount[rarity] then
-
-		chestCount[rarity] += 1
-
-		local lbl = chestLabels[rarity]
-
-		if lbl then
-			lbl.Text = rarity.." - "..chestCount[rarity]
-		end
-
-	end
-
-end
 -------------------------------------------------
 
 Rayfield:Notify({
@@ -849,3 +733,4 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
