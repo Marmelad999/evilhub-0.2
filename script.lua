@@ -1,4 +1,4 @@
---// EvilHub 0.23
+--// EvilHub 0.24
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -579,6 +579,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
