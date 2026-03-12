@@ -152,7 +152,7 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- ESP CREATION (Improved)
+-- ESP CREATION (HP VERSION)
 -------------------------------------------------
 
 local function createESP(part,text,color)
@@ -162,7 +162,7 @@ local function createESP(part,text,color)
 	gui.Size = UDim2.new(0,130,0,30)
 	gui.StudsOffset = Vector3.new(0,3,0)
 	gui.AlwaysOnTop = true
-	gui.MaxDistance = 300
+	gui.MaxDistance = 999999
 	gui.Adornee = part
 
 	local frame = Instance.new("Frame")
@@ -180,13 +180,6 @@ local function createESP(part,text,color)
 	stroke.Thickness = 1.5
 	stroke.Parent = frame
 
-	local gradient = Instance.new("UIGradient")
-	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0,Color3.fromRGB(40,40,40)),
-		ColorSequenceKeypoint.new(1,Color3.fromRGB(15,15,15))
-	})
-	gradient.Parent = frame
-
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1,0,1,0)
 	label.BackgroundTransparency = 1
@@ -199,16 +192,19 @@ local function createESP(part,text,color)
 
 	gui.Parent = part
 
-	-- Distance updater
+	-- HP updater
 	task.spawn(function()
+
+		local model = part.Parent
+		local hum = model and model:FindFirstChildOfClass("Humanoid")
 
 		while gui.Parent and part.Parent do
 
-			if hrp then
+			if hum then
 
-				local dist = math.floor((part.Position - hrp.Position).Magnitude)
+				local hpPercent = math.floor((hum.Health / hum.MaxHealth) * 100)
 
-				label.Text = text.." ["..dist.."m]"
+				label.Text = text.." ["..hpPercent.."%]"
 
 			end
 
@@ -288,7 +284,7 @@ Characters.ChildRemoved:Connect(function(mob)
 
 end)
 -------------------------------------------------
--- MISC ESP
+-- MISC ESP (Highlight Version)
 -------------------------------------------------
 
 local miscColors = {
@@ -303,17 +299,25 @@ local miscColors = {
 local function addMiscESP(obj)
 
 	if not MiscESP then return end
-	if not obj:IsA("BasePart") then return end
 
 	local color = miscColors[obj.Name]
 	if not color then return end
 
-	if not MiscESPObjects[obj] then
+	if MiscESPObjects[obj] then return end
 
-		MiscESPObjects[obj] =
-			createESP(obj,obj.Name,color)
+	if not (obj:IsA("Model") or obj:IsA("BasePart")) then return end
 
-	end
+	local highlight = Instance.new("Highlight")
+	highlight.Name = "MiscESP"
+	highlight.FillColor = color
+	highlight.FillTransparency = 0.5
+	highlight.OutlineColor = Color3.new(1,1,1)
+	highlight.OutlineTransparency = 0
+	highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	highlight.Adornee = obj
+	highlight.Parent = obj
+
+	MiscESPObjects[obj] = highlight
 
 end
 
@@ -328,28 +332,24 @@ end
 local function disableMiscESP()
 
 	for _,esp in pairs(MiscESPObjects) do
-		esp:Destroy()
+		if esp then
+			esp:Destroy()
+		end
 	end
 
 	table.clear(MiscESPObjects)
 
 end
 
--- новые предметы
 Tower.DescendantAdded:Connect(function(obj)
-
 	addMiscESP(obj)
-
 end)
 
--- удаление предметов
 Tower.DescendantRemoving:Connect(function(obj)
 
 	if MiscESPObjects[obj] then
-
 		MiscESPObjects[obj]:Destroy()
 		MiscESPObjects[obj] = nil
-
 	end
 
 end)
@@ -447,5 +447,6 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
