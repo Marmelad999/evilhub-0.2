@@ -1,8 +1,8 @@
--- Rayfield
+-- Rayfield UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
- Name = "Evil Hub 0.2",
+ Name = "Evilhub 0.2",
  LoadingTitle = "Initializing...",
  LoadingSubtitle = "Rayfield UI",
  ConfigurationSaving = {
@@ -22,11 +22,11 @@ local hrp = character:WaitForChild("HumanoidRootPart")
 
 local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AttackV2")
 
--- настройки
+-- настройки киллауры
 local Aura = {
  Enabled = false,
- Range = 30,
- Delay = 0.25,
+ Range = 300,
+ Delay = 0.2,
  Combo = 1
 }
 
@@ -37,21 +37,27 @@ player.CharacterAdded:Connect(function(char)
  Aura.Combo = 1
 end)
 
--- комбо
+-- комбо система
 local function nextCombo()
+
  Aura.Combo += 1
+
  if Aura.Combo > 3 then
   Aura.Combo = 1
  end
+
  return Aura.Combo
+
 end
 
--- поиск цели
-local function getClosest()
+-- поиск ближайшей цели
+local function getClosestTarget()
+
  local closest
  local dist = Aura.Range
 
  for _,model in ipairs(Workspace.Characters:GetChildren()) do
+
   if model ~= character then
 
    local hum = model:FindFirstChildOfClass("Humanoid")
@@ -72,21 +78,32 @@ local function getClosest()
  end
 
  return closest
+
 end
 
--- направление удара
+-- направление удара (ИСПРАВЛЕНО)
 local function getDirection(targetHRP)
- local dir = (targetHRP.Position - hrp.Position).Unit
+
+ local cam = Workspace.CurrentCamera
+ local origin = cam.CFrame.Position
+
+ -- немного выше центра модели
+ local targetPos = targetHRP.Position + Vector3.new(0,1.5,0)
+
+ local dir = (targetPos - origin).Unit
+
  return string.format("%.2f:%.2f:%.2f", dir.X, dir.Y, dir.Z)
+
 end
 
 -- цикл киллауры
 task.spawn(function()
+
  while true do
 
   if Aura.Enabled and hrp then
 
-   local target = getClosest()
+   local target = getClosestTarget()
 
    if target then
 
@@ -97,9 +114,16 @@ task.spawn(function()
 
      local combo = nextCombo()
 
+     -- start attack
      AttackRemote:FireServer(3, combo)
+
+     -- direction
      AttackRemote:FireServer(4, combo, getDirection(thrp))
+
+     -- hit confirm
      AttackRemote:FireServer(5, combo, {id})
+
+     -- finish attack
      AttackRemote:FireServer(1, combo)
 
     end
@@ -109,6 +133,7 @@ task.spawn(function()
   task.wait(Aura.Delay)
 
  end
+
 end)
 
 -- UI
@@ -117,7 +142,7 @@ local CombatTab = Window:CreateTab("Combat", 4483362458)
 CombatTab:CreateToggle({
  Name = "KillAura",
  CurrentValue = false,
- Flag = "KA_Toggle",
+ Flag = "KillAuraToggle",
  Callback = function(v)
   Aura.Enabled = v
  end
@@ -125,11 +150,11 @@ CombatTab:CreateToggle({
 
 CombatTab:CreateSlider({
  Name = "Aura Range",
- Range = {5,100},
- Increment = 1,
+ Range = {10,500},
+ Increment = 5,
  Suffix = " studs",
- CurrentValue = 30,
- Flag = "KA_Range",
+ CurrentValue = 300,
+ Flag = "AuraRange",
  Callback = function(v)
   Aura.Range = v
  end
@@ -140,10 +165,11 @@ CombatTab:CreateSlider({
  Range = {1,20},
  Increment = 1,
  Suffix = " ticks",
- CurrentValue = 5,
- Flag = "KA_Delay",
+ CurrentValue = 4,
+ Flag = "AuraDelay",
  Callback = function(v)
+
   Aura.Delay = v * 0.05
+
  end
 })
-
