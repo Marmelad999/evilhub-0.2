@@ -1,9 +1,9 @@
---// EvilHub 0.25
+--// EvilHub 0.26
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.25",
+	Name = "EvilHub 0.26",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -162,6 +162,28 @@ task.spawn(function()
 		end
 
 		task.wait(AttackCooldown)
+
+	end
+
+end)
+
+-------------------------------------------------
+-- MOB ESP SCANNER
+-------------------------------------------------
+
+task.spawn(function()
+
+	while true do
+
+		if MobESP then
+
+			for _,mob in ipairs(Characters:GetChildren()) do
+				addMobESP(mob)
+			end
+
+		end
+
+		task.wait(0.5)
 
 	end
 
@@ -348,14 +370,14 @@ local function detectChest(model)
 
 	if MiscESPObjects[model] then return end
 
-	local down = model:FindFirstChild("Down")
-	local up = model:FindFirstChild("Up")
+	local part = model:FindFirstChild("Down") or model:FindFirstChild("Up")
 
-	local part = down or up
+	if not part then
+		task.wait(0.2)
+		part = model:FindFirstChild("Down") or model:FindFirstChild("Up")
+	end
+
 	if not part then return end
-
-	local rarity = chestRarity[part.BrickColor.Name]
-	if not rarity then return end
 
 	-------------------------------------------------
 -- CHEST NOTIFICATIONS
@@ -517,6 +539,33 @@ Tower.DescendantRemoving:Connect(function(obj)
 	end
 
 end)
+
+-------------------------------------------------
+-- TOWER SCANNER (FIX CHEST ESP)
+-------------------------------------------------
+
+task.spawn(function()
+
+	while true do
+
+		if MiscESP then
+
+			for _,floor in ipairs(Tower:GetChildren()) do
+
+				for _,obj in ipairs(floor:GetDescendants()) do
+					addMiscESP(obj)
+				end
+
+			end
+
+		end
+
+		task.wait(0.5)
+
+	end
+
+end)
+
 -------------------------------------------------
 -- UI
 -------------------------------------------------
@@ -606,8 +655,9 @@ VisualTab:CreateToggle({
 -------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.25",
+	Title = "EvilHub 0.26",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
