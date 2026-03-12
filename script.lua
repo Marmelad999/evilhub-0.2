@@ -1,12 +1,15 @@
---// UI
+--// EvilHub 0.2
+
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "LevelBound Helper",
-	LoadingTitle = "Loading...",
-	LoadingSubtitle = "AutoAttack + ESP",
+	Name = "EvilHub 0.2",
+	LoadingTitle = "EvilHub",
+	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
-		Enabled = false
+		Enabled = true,
+		FolderName = "EvilHub",
+		FileName = "Settings"
 	}
 })
 
@@ -19,10 +22,12 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
 
 player.CharacterAdded:Connect(function(char)
 	character = char
 	hrp = char:WaitForChild("HumanoidRootPart")
+	humanoid = char:WaitForChild("Humanoid")
 end)
 
 --// Remote
@@ -32,29 +37,16 @@ local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Atta
 -- SETTINGS
 -------------------------------------------------
 
-local AutoAttackEnabled = false
+local AutoAttack = false
 local AttackRange = 20
 local AttackCooldown = 0.15
 
-local ESPStates = {
-	Mobs = false,
-	Ruby = false,
-	GoldBag = false,
-	Chest = false,
-	SecretChest = false,
-	ChallengeRug = false
-}
+local WalkSpeed = 16
 
-local ESPColors = {
-	Mobs = Color3.fromRGB(255,255,255),
-	Ruby = Color3.fromRGB(220,20,60),
-	GoldBag = Color3.fromRGB(255,0,255),
-	Chest = Color3.fromRGB(255,215,0),
-	SecretChest = Color3.fromRGB(170,0,255),
-	ChallengeRug = Color3.fromRGB(0,200,255)
-}
+local MobESP = false
+local MiscESP = false
 
-local ActiveBillboards = {}
+local ActiveESP = {}
 
 -------------------------------------------------
 -- Direction
@@ -66,24 +58,24 @@ local function getDirectionString(targetHRP)
 	local mag = vec.Magnitude
 
 	if mag == 0 then
-		return "0, 0, 1"
+		return "0,0,1"
 	end
 
 	local dir = vec / mag
 
-	return string.format("%f, %f, %f", dir.X, dir.Y, dir.Z)
+	return string.format("%f,%f,%f",dir.X,dir.Y,dir.Z)
 
 end
 
 -------------------------------------------------
--- MOBS IN RANGE
+-- AutoAttack
 -------------------------------------------------
 
-local function getMobsInRange()
+local function getMobs()
 
 	local mobs = {}
 
-	for _, mob in ipairs(Workspace.Characters:GetChildren()) do
+	for _,mob in ipairs(Workspace.Characters:GetChildren()) do
 
 		if mob == character then continue end
 		if Players:GetPlayerFromCharacter(mob) then continue end
@@ -106,26 +98,22 @@ local function getMobsInRange()
 
 end
 
--------------------------------------------------
--- AUTO ATTACK
--------------------------------------------------
-
 task.spawn(function()
 
 	while true do
 
-		if AutoAttackEnabled and hrp then
+		if AutoAttack then
 
-			for _,mob in ipairs(getMobsInRange()) do
+			for _,mob in ipairs(getMobs()) do
 
 				local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 
 				if mobHRP then
 
-					local direction = getDirectionString(mobHRP)
+					local dir = getDirectionString(mobHRP)
 
 					AttackRemote:FireServer(5,1,mob)
-					AttackRemote:FireServer(4,1,direction)
+					AttackRemote:FireServer(4,1,dir)
 
 				end
 
@@ -140,112 +128,134 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- BILLBOARD CREATION
+-- WalkSpeed Loop
 -------------------------------------------------
 
-local function createBillboard(obj,text,color)
+task.spawn(function()
 
-	if ActiveBillboards[obj] then return end
+	while true do
 
-	local part
+		if humanoid then
+			humanoid.WalkSpeed = WalkSpeed
+		end
 
-	if obj:IsA("Model") then
-		part = obj:FindFirstChild("HumanoidRootPart")
-	else
-		part = obj
+		task.wait(0.2)
+
 	end
 
+end)
+
+-------------------------------------------------
+-- ESP UI
+-------------------------------------------------
+
+local function createESP(obj,text,color)
+
+	if ActiveESP[obj] then return end
+
+	local part = obj:IsA("Model") and obj:FindFirstChild("HumanoidRootPart") or obj
 	if not part then return end
 
-	local billboard = Instance.new("BillboardGui")
-	billboard.Name = "ESP"
-	billboard.Adornee = part
-	billboard.Size = UDim2.new(0,140,0,40)
-	billboard.StudsOffset = Vector3.new(0,3,0)
-	billboard.AlwaysOnTop = true
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ESP"
+	gui.Adornee = part
+	gui.Size = UDim2.new(0,110,0,26)
+	gui.StudsOffset = Vector3.new(0,3,0)
+	gui.AlwaysOnTop = true
+
+	local frame = Instance.new("Frame")
+	frame.Parent = gui
+	frame.Size = UDim2.new(1,0,1,0)
+	frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+	frame.BackgroundTransparency = 0.35
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0,6)
+	corner.Parent = frame
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Parent = frame
+	stroke.Color = color
+	stroke.Thickness = 1
 
 	local label = Instance.new("TextLabel")
-	label.Parent = billboard
+	label.Parent = frame
 	label.Size = UDim2.new(1,0,1,0)
 	label.BackgroundTransparency = 1
 	label.Text = text
 	label.TextColor3 = color
-	label.TextStrokeTransparency = 0
-	label.TextStrokeColor3 = Color3.new(0,0,0)
 	label.TextScaled = true
 	label.Font = Enum.Font.GothamBold
+	label.TextSize = 11
 
-	billboard.Parent = part
+	gui.Parent = part
 
-	ActiveBillboards[obj] = billboard
-
-end
-
-local function removeBillboard(obj)
-
-	local gui = ActiveBillboards[obj]
-
-	if gui then
-		gui:Destroy()
-		ActiveBillboards[obj] = nil
-	end
+	ActiveESP[obj] = gui
 
 end
 
--------------------------------------------------
--- ESP APPLY
--------------------------------------------------
+local function removeESP(obj)
 
-local function applyESP(obj)
-
-	if obj:IsA("Model") and ESPStates.Mobs then
-		if obj ~= character and not Players:GetPlayerFromCharacter(obj) then
-			createBillboard(obj,obj.Name,ESPColors.Mobs)
-		end
-	end
-
-	if obj.Name == "Ruby" and ESPStates.Ruby then
-		createBillboard(obj,"Ruby",ESPColors.Ruby)
-	end
-
-	if obj.Name == "GoldBag" and ESPStates.GoldBag then
-		createBillboard(obj,"GoldBag",ESPColors.GoldBag)
-	end
-
-	if obj.Name == "Chest" and ESPStates.Chest then
-		createBillboard(obj,"Chest",ESPColors.Chest)
-	end
-
-	if obj.Name == "SecretChest" and ESPStates.SecretChest then
-		createBillboard(obj,"SecretChest",ESPColors.SecretChest)
-	end
-
-	if obj.Name == "ChallengeRug" and ESPStates.ChallengeRug then
-		createBillboard(obj,"Challenge",ESPColors.ChallengeRug)
+	if ActiveESP[obj] then
+		ActiveESP[obj]:Destroy()
+		ActiveESP[obj] = nil
 	end
 
 end
 
 -------------------------------------------------
--- WORLD SCAN
+-- ESP Scanner
 -------------------------------------------------
 
-local function scanWorld()
+local function scanESP()
 
 	for _,obj in ipairs(Workspace:GetDescendants()) do
-		applyESP(obj)
+
+		-- mobs
+		if MobESP and obj:IsA("Model") then
+
+			if obj ~= character and not Players:GetPlayerFromCharacter(obj) then
+				createESP(obj,obj.Name,Color3.fromRGB(255,255,255))
+			end
+
+		end
+
+		-- misc
+		if MiscESP then
+
+			if obj.Name == "Ruby" then
+				createESP(obj,"Ruby",Color3.fromRGB(220,20,60))
+			end
+
+			if obj.Name == "GoldBag" then
+				createESP(obj,"GoldBag",Color3.fromRGB(255,0,255))
+			end
+
+			if obj.Name == "Chest" then
+				createESP(obj,"Chest",Color3.fromRGB(255,215,0))
+			end
+
+			if obj.Name == "SecretChest" then
+				createESP(obj,"SecretChest",Color3.fromRGB(170,0,255))
+			end
+
+			if obj.Name == "ChallengeRug" then
+				createESP(obj,"Challenge",Color3.fromRGB(0,200,255))
+			end
+
+		end
+
 	end
 
 end
 
--------------------------------------------------
--- TRACK NEW OBJECTS
--------------------------------------------------
+task.spawn(function()
 
-Workspace.DescendantAdded:Connect(function(obj)
-	task.defer(function()
-		applyESP(obj)
-	end)
+	while true do
+		scanESP()
+		task.wait(2)
+	end
+
 end)
 
 -------------------------------------------------
@@ -257,8 +267,9 @@ local CombatTab = Window:CreateTab("Combat",4483362458)
 CombatTab:CreateToggle({
 	Name = "Auto Attack",
 	CurrentValue = false,
+	Flag = "AutoAttack",
 	Callback = function(v)
-		AutoAttackEnabled = v
+		AutoAttack = v
 	end
 })
 
@@ -267,6 +278,7 @@ CombatTab:CreateSlider({
 	Range = {5,100},
 	Increment = 1,
 	CurrentValue = 20,
+	Flag = "Range",
 	Callback = function(v)
 		AttackRange = v
 	end
@@ -277,8 +289,20 @@ CombatTab:CreateSlider({
 	Range = {0.05,1},
 	Increment = 0.01,
 	CurrentValue = 0.15,
+	Flag = "Cooldown",
 	Callback = function(v)
 		AttackCooldown = v
+	end
+})
+
+CombatTab:CreateSlider({
+	Name = "WalkSpeed",
+	Range = {16,100},
+	Increment = 1,
+	CurrentValue = 16,
+	Flag = "WalkSpeed",
+	Callback = function(v)
+		WalkSpeed = v
 	end
 })
 
@@ -286,42 +310,28 @@ CombatTab:CreateSlider({
 
 local VisualTab = Window:CreateTab("Visuals",4483362458)
 
-local function createESPToggle(name,key)
+VisualTab:CreateToggle({
+	Name = "Mob ESP",
+	CurrentValue = false,
+	Flag = "MobESP",
+	Callback = function(v)
+		MobESP = v
+	end
+})
 
-	VisualTab:CreateToggle({
-		Name = name,
-		CurrentValue = false,
-		Callback = function(v)
-
-			ESPStates[key] = v
-
-			if v then
-				scanWorld()
-			else
-				for obj,gui in pairs(ActiveBillboards) do
-					if gui then
-						gui:Destroy()
-					end
-				end
-				ActiveBillboards = {}
-			end
-
-		end
-	})
-
-end
-
-createESPToggle("Mob ESP","Mobs")
-createESPToggle("Ruby ESP","Ruby")
-createESPToggle("GoldBag ESP","GoldBag")
-createESPToggle("Chest ESP","Chest")
-createESPToggle("Secret Chest ESP","SecretChest")
-createESPToggle("Challenge ESP","ChallengeRug")
+VisualTab:CreateToggle({
+	Name = "Misc ESP",
+	CurrentValue = false,
+	Flag = "MiscESP",
+	Callback = function(v)
+		MiscESP = v
+	end
+})
 
 -------------------------------------------------
 
 Rayfield:Notify({
-	Title = "Loaded",
-	Content = "AutoAttack + Full ESP Ready",
+	Title = "EvilHub 0.2",
+	Content = "Loaded Successfully",
 	Duration = 5
 })
