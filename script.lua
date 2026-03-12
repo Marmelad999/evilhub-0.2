@@ -1,4 +1,5 @@
---[[ AutoAttack Script ]]
+```lua
+--// AutoAttack Script
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -34,10 +35,20 @@ local AutoAttackEnabled = false
 local AttackRange = 20
 local AttackCooldown = 0.15
 
---// Direction helper
+--// Direction function (FIXED NaN)
 local function getDirectionString(targetHRP)
-	local dir = (targetHRP.Position - hrp.Position).Unit
+
+	local vec = targetHRP.Position - hrp.Position
+	local mag = vec.Magnitude
+
+	if mag == 0 then
+		return "0, 0, 1"
+	end
+
+	local dir = vec / mag
+
 	return string.format("%f, %f, %f", dir.X, dir.Y, dir.Z)
+
 end
 
 --// Find closest mob
@@ -48,14 +59,23 @@ local function getClosestMob()
 
 	for _, mob in ipairs(Workspace.Characters:GetChildren()) do
 
-		if not mob:IsA("Model") then
+		if mob == character then
+			continue
+		end
+
+		-- ignore players
+		if Players:GetPlayerFromCharacter(mob) then
 			continue
 		end
 
 		local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 		local hum = mob:FindFirstChildOfClass("Humanoid")
 
-		if not mobHRP or not hum or hum.Health <= 0 then
+		if not mobHRP or not hum then
+			continue
+		end
+
+		if hum.Health <= 0 then
 			continue
 		end
 
@@ -89,11 +109,11 @@ task.spawn(function()
 
 					local direction = getDirectionString(mobHRP)
 
-					-- Direction call
-					AttackRemote:FireServer(4,1,direction)
-
 					-- Target call
 					AttackRemote:FireServer(5,1,mob)
+
+					-- Direction call
+					AttackRemote:FireServer(4,1,direction)
 
 				end
 
@@ -145,3 +165,4 @@ Rayfield:Notify({
 	Content = "AutoAttack Ready",
 	Duration = 5
 })
+```
