@@ -164,6 +164,3 @@ Rayfield:Notify({
 	Content = "AutoAttack Ready",
 	Duration = 5
 })
-```
-
-
