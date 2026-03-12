@@ -152,21 +152,23 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- ESP CREATION
+-- ESP CREATION (Improved)
 -------------------------------------------------
 
 local function createESP(part,text,color)
 
 	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.new(0,110,0,26)
+	gui.Name = "EvilESP"
+	gui.Size = UDim2.new(0,130,0,30)
 	gui.StudsOffset = Vector3.new(0,3,0)
 	gui.AlwaysOnTop = true
+	gui.MaxDistance = 300
 	gui.Adornee = part
 
 	local frame = Instance.new("Frame")
 	frame.Size = UDim2.new(1,0,1,0)
 	frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-	frame.BackgroundTransparency = 0.35
+	frame.BackgroundTransparency = 0.25
 	frame.Parent = gui
 
 	local corner = Instance.new("UICorner")
@@ -175,19 +177,46 @@ local function createESP(part,text,color)
 
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = color
-	stroke.Thickness = 1
+	stroke.Thickness = 1.5
 	stroke.Parent = frame
+
+	local gradient = Instance.new("UIGradient")
+	gradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0,Color3.fromRGB(40,40,40)),
+		ColorSequenceKeypoint.new(1,Color3.fromRGB(15,15,15))
+	})
+	gradient.Parent = frame
 
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1,0,1,0)
 	label.BackgroundTransparency = 1
-	label.Text = text
 	label.Font = Enum.Font.GothamBold
-	label.TextSize = 11
+	label.TextSize = 12
 	label.TextColor3 = color
+	label.TextStrokeTransparency = 0.6
+	label.Text = text
 	label.Parent = frame
 
 	gui.Parent = part
+
+	-- Distance updater
+	task.spawn(function()
+
+		while gui.Parent and part.Parent do
+
+			if hrp then
+
+				local dist = math.floor((part.Position - hrp.Position).Magnitude)
+
+				label.Text = text.." ["..dist.."m]"
+
+			end
+
+			task.wait(0.25)
+
+		end
+
+	end)
 
 	return gui
 
@@ -197,23 +226,31 @@ end
 -- MOB ESP
 -------------------------------------------------
 
+local function addMobESP(mob)
+
+	if not MobESP then return end
+	if mob == character then return end
+	if Players:GetPlayerFromCharacter(mob) then return end
+
+	local hrp2 = mob:FindFirstChild("HumanoidRootPart")
+	local hum = mob:FindFirstChildOfClass("Humanoid")
+
+	if not hrp2 or not hum then return end
+	if hum.Health <= 0 then return end
+
+	if not MobESPObjects[hrp2] then
+
+		MobESPObjects[hrp2] =
+			createESP(hrp2,mob.Name,Color3.fromRGB(255,255,255))
+
+	end
+
+end
+
 local function enableMobESP()
 
 	for _,mob in ipairs(Characters:GetChildren()) do
-
-		if mob ~= character and not Players:GetPlayerFromCharacter(mob) then
-
-			local hrp2 = mob:FindFirstChild("HumanoidRootPart")
-
-			if hrp2 and not MobESPObjects[hrp2] then
-
-				MobESPObjects[hrp2] =
-					createESP(hrp2,mob.Name,Color3.fromRGB(255,255,255))
-
-			end
-
-		end
-
+		addMobESP(mob)
 	end
 
 end
@@ -228,48 +265,62 @@ local function disableMobESP()
 
 end
 
+-- новые мобы
+Characters.ChildAdded:Connect(function(mob)
+
+	task.wait(0.2)
+
+	addMobESP(mob)
+
+end)
+
+-- удаление мобов
+Characters.ChildRemoved:Connect(function(mob)
+
+	local hrp2 = mob:FindFirstChild("HumanoidRootPart")
+
+	if hrp2 and MobESPObjects[hrp2] then
+
+		MobESPObjects[hrp2]:Destroy()
+		MobESPObjects[hrp2] = nil
+
+	end
+
+end)
 -------------------------------------------------
 -- MISC ESP
 -------------------------------------------------
 
+local miscColors = {
+	Ruby = Color3.fromRGB(220,20,60),
+	GoldBag = Color3.fromRGB(255,0,255),
+	Chest = Color3.fromRGB(255,215,0),
+	SecretChest = Color3.fromRGB(170,0,255),
+	ChallengeRug = Color3.fromRGB(0,200,255),
+	EXPBook = Color3.fromRGB(0,255,120)
+}
+
+local function addMiscESP(obj)
+
+	if not MiscESP then return end
+	if not obj:IsA("BasePart") then return end
+
+	local color = miscColors[obj.Name]
+	if not color then return end
+
+	if not MiscESPObjects[obj] then
+
+		MiscESPObjects[obj] =
+			createESP(obj,obj.Name,color)
+
+	end
+
+end
+
 local function enableMiscESP()
 
 	for _,obj in ipairs(Tower:GetDescendants()) do
-
-		if obj:IsA("BasePart") then
-
-			if obj.Name == "Ruby" then
-				MiscESPObjects[obj] =
-					createESP(obj,"Ruby",Color3.fromRGB(220,20,60))
-			end
-
-			if obj.Name == "GoldBag" then
-				MiscESPObjects[obj] =
-					createESP(obj,"GoldBag",Color3.fromRGB(255,0,255))
-			end
-
-			if obj.Name == "Chest" then
-				MiscESPObjects[obj] =
-					createESP(obj,"Chest",Color3.fromRGB(255,215,0))
-			end
-
-			if obj.Name == "SecretChest" then
-				MiscESPObjects[obj] =
-					createESP(obj,"SecretChest",Color3.fromRGB(170,0,255))
-			end
-
-			if obj.Name == "ChallengeRug" then
-				MiscESPObjects[obj] =
-					createESP(obj,"Challenge",Color3.fromRGB(0,200,255))
-			end
-
-			if obj.Name == "EXPBook" then
-				MiscESPObjects[obj] =
-					createESP(obj,"EXPBook",Color3.fromRGB(0,255,120))
-			end
-
-		end
-
+		addMiscESP(obj)
 	end
 
 end
@@ -283,6 +334,25 @@ local function disableMiscESP()
 	table.clear(MiscESPObjects)
 
 end
+
+-- новые предметы
+Tower.DescendantAdded:Connect(function(obj)
+
+	addMiscESP(obj)
+
+end)
+
+-- удаление предметов
+Tower.DescendantRemoving:Connect(function(obj)
+
+	if MiscESPObjects[obj] then
+
+		MiscESPObjects[obj]:Destroy()
+		MiscESPObjects[obj] = nil
+
+	end
+
+end)
 
 -------------------------------------------------
 -- UI
@@ -377,3 +447,4 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
