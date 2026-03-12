@@ -1,5 +1,4 @@
-```lua
---// Load UI
+--// UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
@@ -29,19 +28,36 @@ end)
 --// Remote
 local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AttackV2")
 
---// Settings
+-------------------------------------------------
+-- SETTINGS
+-------------------------------------------------
+
 local AutoAttackEnabled = false
 local AttackRange = 20
 local AttackCooldown = 0.15
 
---// ESP Settings
-local MobESPEnabled = false
-local RubyESPEnabled = false
+local ESPStates = {
+	Mobs = false,
+	Ruby = false,
+	GoldBag = false,
+	Chest = false,
+	SecretChest = false,
+	ChallengeRug = false
+}
+
+local ESPColors = {
+	Mobs = Color3.fromRGB(255,255,255),
+	Ruby = Color3.fromRGB(220,20,60),
+	GoldBag = Color3.fromRGB(255,0,255),
+	Chest = Color3.fromRGB(255,215,0),
+	SecretChest = Color3.fromRGB(170,0,255),
+	ChallengeRug = Color3.fromRGB(0,200,255)
+}
 
 local ActiveBillboards = {}
 
 -------------------------------------------------
--- Direction (NaN protection)
+-- Direction
 -------------------------------------------------
 
 local function getDirectionString(targetHRP)
@@ -60,7 +76,7 @@ local function getDirectionString(targetHRP)
 end
 
 -------------------------------------------------
--- Get mobs in range
+-- MOBS IN RANGE
 -------------------------------------------------
 
 local function getMobsInRange()
@@ -81,7 +97,7 @@ local function getMobsInRange()
 		local dist = (mobHRP.Position - hrp.Position).Magnitude
 
 		if dist <= AttackRange then
-			table.insert(mobs, mob)
+			table.insert(mobs,mob)
 		end
 
 	end
@@ -91,7 +107,7 @@ local function getMobsInRange()
 end
 
 -------------------------------------------------
--- AutoAttack Loop
+-- AUTO ATTACK
 -------------------------------------------------
 
 task.spawn(function()
@@ -100,9 +116,7 @@ task.spawn(function()
 
 		if AutoAttackEnabled and hrp then
 
-			local mobs = getMobsInRange()
-
-			for _, mob in ipairs(mobs) do
+			for _,mob in ipairs(getMobsInRange()) do
 
 				local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 
@@ -126,12 +140,188 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- Billboard ESP creation
+-- BILLBOARD CREATION
 -------------------------------------------------
 
-local function createBillboard(obj, text, color)
+local function createBillboard(obj,text,color)
 
 	if ActiveBillboards[obj] then return end
 
-	local part = obj:IsA("Model") and obj:FindFirstChild("Human
-```
+	local part
+
+	if obj:IsA("Model") then
+		part = obj:FindFirstChild("HumanoidRootPart")
+	else
+		part = obj
+	end
+
+	if not part then return end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "ESP"
+	billboard.Adornee = part
+	billboard.Size = UDim2.new(0,140,0,40)
+	billboard.StudsOffset = Vector3.new(0,3,0)
+	billboard.AlwaysOnTop = true
+
+	local label = Instance.new("TextLabel")
+	label.Parent = billboard
+	label.Size = UDim2.new(1,0,1,0)
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextColor3 = color
+	label.TextStrokeTransparency = 0
+	label.TextStrokeColor3 = Color3.new(0,0,0)
+	label.TextScaled = true
+	label.Font = Enum.Font.GothamBold
+
+	billboard.Parent = part
+
+	ActiveBillboards[obj] = billboard
+
+end
+
+local function removeBillboard(obj)
+
+	local gui = ActiveBillboards[obj]
+
+	if gui then
+		gui:Destroy()
+		ActiveBillboards[obj] = nil
+	end
+
+end
+
+-------------------------------------------------
+-- ESP APPLY
+-------------------------------------------------
+
+local function applyESP(obj)
+
+	if obj:IsA("Model") and ESPStates.Mobs then
+		if obj ~= character and not Players:GetPlayerFromCharacter(obj) then
+			createBillboard(obj,obj.Name,ESPColors.Mobs)
+		end
+	end
+
+	if obj.Name == "Ruby" and ESPStates.Ruby then
+		createBillboard(obj,"Ruby",ESPColors.Ruby)
+	end
+
+	if obj.Name == "GoldBag" and ESPStates.GoldBag then
+		createBillboard(obj,"GoldBag",ESPColors.GoldBag)
+	end
+
+	if obj.Name == "Chest" and ESPStates.Chest then
+		createBillboard(obj,"Chest",ESPColors.Chest)
+	end
+
+	if obj.Name == "SecretChest" and ESPStates.SecretChest then
+		createBillboard(obj,"SecretChest",ESPColors.SecretChest)
+	end
+
+	if obj.Name == "ChallengeRug" and ESPStates.ChallengeRug then
+		createBillboard(obj,"Challenge",ESPColors.ChallengeRug)
+	end
+
+end
+
+-------------------------------------------------
+-- WORLD SCAN
+-------------------------------------------------
+
+local function scanWorld()
+
+	for _,obj in ipairs(Workspace:GetDescendants()) do
+		applyESP(obj)
+	end
+
+end
+
+-------------------------------------------------
+-- TRACK NEW OBJECTS
+-------------------------------------------------
+
+Workspace.DescendantAdded:Connect(function(obj)
+	task.defer(function()
+		applyESP(obj)
+	end)
+end)
+
+-------------------------------------------------
+-- UI
+-------------------------------------------------
+
+local CombatTab = Window:CreateTab("Combat",4483362458)
+
+CombatTab:CreateToggle({
+	Name = "Auto Attack",
+	CurrentValue = false,
+	Callback = function(v)
+		AutoAttackEnabled = v
+	end
+})
+
+CombatTab:CreateSlider({
+	Name = "Attack Range",
+	Range = {5,100},
+	Increment = 1,
+	CurrentValue = 20,
+	Callback = function(v)
+		AttackRange = v
+	end
+})
+
+CombatTab:CreateSlider({
+	Name = "Attack Cooldown",
+	Range = {0.05,1},
+	Increment = 0.01,
+	CurrentValue = 0.15,
+	Callback = function(v)
+		AttackCooldown = v
+	end
+})
+
+-------------------------------------------------
+
+local VisualTab = Window:CreateTab("Visuals",4483362458)
+
+local function createESPToggle(name,key)
+
+	VisualTab:CreateToggle({
+		Name = name,
+		CurrentValue = false,
+		Callback = function(v)
+
+			ESPStates[key] = v
+
+			if v then
+				scanWorld()
+			else
+				for obj,gui in pairs(ActiveBillboards) do
+					if gui then
+						gui:Destroy()
+					end
+				end
+				ActiveBillboards = {}
+			end
+
+		end
+	})
+
+end
+
+createESPToggle("Mob ESP","Mobs")
+createESPToggle("Ruby ESP","Ruby")
+createESPToggle("GoldBag ESP","GoldBag")
+createESPToggle("Chest ESP","Chest")
+createESPToggle("Secret Chest ESP","SecretChest")
+createESPToggle("Challenge ESP","ChallengeRug")
+
+-------------------------------------------------
+
+Rayfield:Notify({
+	Title = "Loaded",
+	Content = "AutoAttack + Full ESP Ready",
+	Duration = 5
+})
