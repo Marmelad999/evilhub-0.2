@@ -1,4 +1,4 @@
---// EvilHub 0.2
+--// EvilHub 0.21
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -18,7 +18,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
---// Folders
 local Characters = Workspace:WaitForChild("Characters")
 local Tower = Workspace:WaitForChild("Tower")
 
@@ -44,34 +43,41 @@ local WalkSpeed = 16
 local MobESP = false
 local MiscESP = false
 
-local ActiveESP = {}
+local MobESPObjects = {}
+local MiscESPObjects = {}
 
 -------------------------------------------------
--- CHARACTER RESPAWN
+-- RESPAWN
 -------------------------------------------------
 
-local function onCharacter(char)
+player.CharacterAdded:Connect(function(char)
 
 	character = char
 	hrp = char:WaitForChild("HumanoidRootPart")
 	humanoid = char:WaitForChild("Humanoid")
 
-	humanoid.WalkSpeed = WalkSpeed
+end)
 
-	humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+-------------------------------------------------
+-- WALKSPEED FIX
+-------------------------------------------------
 
-		if humanoid.WalkSpeed ~= WalkSpeed then
+task.spawn(function()
+
+	while true do
+
+		if humanoid then
 			humanoid.WalkSpeed = WalkSpeed
 		end
 
-	end)
+		task.wait(0.05)
 
-end
+	end
 
-player.CharacterAdded:Connect(onCharacter)
+end)
 
 -------------------------------------------------
--- Direction
+-- AUTO ATTACK
 -------------------------------------------------
 
 local function getDirectionString(targetHRP)
@@ -88,10 +94,6 @@ local function getDirectionString(targetHRP)
 	return string.format("%f,%f,%f",dir.X,dir.Y,dir.Z)
 
 end
-
--------------------------------------------------
--- AUTO ATTACK
--------------------------------------------------
 
 local function getMobs()
 
@@ -150,57 +152,44 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- ESP UI
+-- ESP CREATION
 -------------------------------------------------
 
 local function createESP(part,text,color)
 
-	if ActiveESP[part] then return end
-
 	local gui = Instance.new("BillboardGui")
-	gui.Name = "ESP"
-	gui.Adornee = part
 	gui.Size = UDim2.new(0,110,0,26)
 	gui.StudsOffset = Vector3.new(0,3,0)
 	gui.AlwaysOnTop = true
+	gui.Adornee = part
 
 	local frame = Instance.new("Frame")
-	frame.Parent = gui
 	frame.Size = UDim2.new(1,0,1,0)
 	frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 	frame.BackgroundTransparency = 0.35
+	frame.Parent = gui
 
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0,6)
 	corner.Parent = frame
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Parent = frame
 	stroke.Color = color
 	stroke.Thickness = 1
+	stroke.Parent = frame
 
 	local label = Instance.new("TextLabel")
-	label.Parent = frame
 	label.Size = UDim2.new(1,0,1,0)
 	label.BackgroundTransparency = 1
 	label.Text = text
-	label.TextColor3 = color
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = 11
-	label.TextScaled = false
+	label.TextColor3 = color
+	label.Parent = frame
 
 	gui.Parent = part
 
-	ActiveESP[part] = gui
-
-end
-
-local function removeESP(part)
-
-	if ActiveESP[part] then
-		ActiveESP[part]:Destroy()
-		ActiveESP[part] = nil
-	end
+	return gui
 
 end
 
@@ -208,7 +197,7 @@ end
 -- MOB ESP
 -------------------------------------------------
 
-local function updateMobESP()
+local function enableMobESP()
 
 	for _,mob in ipairs(Characters:GetChildren()) do
 
@@ -216,19 +205,26 @@ local function updateMobESP()
 
 			local hrp2 = mob:FindFirstChild("HumanoidRootPart")
 
-			if hrp2 then
+			if hrp2 and not MobESPObjects[hrp2] then
 
-				if MobESP then
+				MobESPObjects[hrp2] =
 					createESP(hrp2,mob.Name,Color3.fromRGB(255,255,255))
-				else
-					removeESP(hrp2)
-				end
 
 			end
 
 		end
 
 	end
+
+end
+
+local function disableMobESP()
+
+	for _,esp in pairs(MobESPObjects) do
+		esp:Destroy()
+	end
+
+	table.clear(MobESPObjects)
 
 end
 
@@ -236,50 +232,40 @@ end
 -- MISC ESP
 -------------------------------------------------
 
-local function updateMiscESP()
+local function enableMiscESP()
 
 	for _,obj in ipairs(Tower:GetDescendants()) do
 
 		if obj:IsA("BasePart") then
 
 			if obj.Name == "Ruby" then
-				if MiscESP then
+				MiscESPObjects[obj] =
 					createESP(obj,"Ruby",Color3.fromRGB(220,20,60))
-				else
-					removeESP(obj)
-				end
 			end
 
 			if obj.Name == "GoldBag" then
-				if MiscESP then
+				MiscESPObjects[obj] =
 					createESP(obj,"GoldBag",Color3.fromRGB(255,0,255))
-				else
-					removeESP(obj)
-				end
 			end
 
 			if obj.Name == "Chest" then
-				if MiscESP then
+				MiscESPObjects[obj] =
 					createESP(obj,"Chest",Color3.fromRGB(255,215,0))
-				else
-					removeESP(obj)
-				end
 			end
 
 			if obj.Name == "SecretChest" then
-				if MiscESP then
+				MiscESPObjects[obj] =
 					createESP(obj,"SecretChest",Color3.fromRGB(170,0,255))
-				else
-					removeESP(obj)
-				end
 			end
 
 			if obj.Name == "ChallengeRug" then
-				if MiscESP then
+				MiscESPObjects[obj] =
 					createESP(obj,"Challenge",Color3.fromRGB(0,200,255))
-				else
-					removeESP(obj)
-				end
+			end
+
+			if obj.Name == "EXPBook" then
+				MiscESPObjects[obj] =
+					createESP(obj,"EXPBook",Color3.fromRGB(0,255,120))
 			end
 
 		end
@@ -288,22 +274,15 @@ local function updateMiscESP()
 
 end
 
--------------------------------------------------
--- ESP LOOP
--------------------------------------------------
+local function disableMiscESP()
 
-task.spawn(function()
-
-	while true do
-
-		updateMobESP()
-		updateMiscESP()
-
-		task.wait(1)
-
+	for _,esp in pairs(MiscESPObjects) do
+		esp:Destroy()
 	end
 
-end)
+	table.clear(MiscESPObjects)
+
+end
 
 -------------------------------------------------
 -- UI
@@ -333,7 +312,7 @@ CombatTab:CreateSlider({
 
 CombatTab:CreateSlider({
 	Name = "Attack Cooldown",
-	Range = {0.05,1},
+	Range = {0.01,1},
 	Increment = 0.01,
 	CurrentValue = 0.15,
 	Flag = "Cooldown",
@@ -349,13 +328,7 @@ CombatTab:CreateSlider({
 	CurrentValue = 16,
 	Flag = "WalkSpeed",
 	Callback = function(v)
-
 		WalkSpeed = v
-
-		if humanoid then
-			humanoid.WalkSpeed = v
-		end
-
 	end
 })
 
@@ -368,7 +341,15 @@ VisualTab:CreateToggle({
 	CurrentValue = false,
 	Flag = "MobESP",
 	Callback = function(v)
+
 		MobESP = v
+
+		if v then
+			enableMobESP()
+		else
+			disableMobESP()
+		end
+
 	end
 })
 
@@ -377,7 +358,15 @@ VisualTab:CreateToggle({
 	CurrentValue = false,
 	Flag = "MiscESP",
 	Callback = function(v)
+
 		MiscESP = v
+
+		if v then
+			enableMiscESP()
+		else
+			disableMiscESP()
+		end
+
 	end
 })
 
