@@ -1,4 +1,4 @@
---// EvilHub 0.3 fix 2
+--// EvilHub 0.3 fix 3
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -45,66 +45,6 @@ local MiscESP = false
 
 local MobESPObjects = {}
 local MiscESPObjects = {}
-
--------------------------------------------------
--- CHEST COUNT
--------------------------------------------------
-
-local ChestTitle = Instance.new("TextLabel")
-ChestTitle.Size = UDim2.new(1,0,0,18)
-ChestTitle.BackgroundTransparency = 1
-ChestTitle.Font = Enum.Font.GothamBold
-ChestTitle.TextSize = 13
-ChestTitle.Text = "Chests Found"
-ChestTitle.TextColor3 = Color3.new(1,1,1)
-ChestTitle.Parent = Frame
-
-local chestRarities = {
-	"COMMON",
-	"UNCOMMON",
-	"RARE",
-	"EPIC",
-	"LEGENDARY",
-	"MYTHIC",
-	"CURSED"
-}
-
-local chestColors = {
-	COMMON = Color3.fromRGB(140,140,140),
-	UNCOMMON = Color3.fromRGB(80,255,120),
-	RARE = Color3.fromRGB(90,150,255),
-	EPIC = Color3.fromRGB(255,110,210),
-	LEGENDARY = Color3.fromRGB(255,200,60),
-	MYTHIC = Color3.fromRGB(255,60,60),
-	CURSED = Color3.fromRGB(255,80,80)
-}
-
-local chestCount = {}
-local chestLabels = {}
-
-for _,rarity in ipairs(chestRarities) do
-	chestCount[rarity] = 0
-	local lbl = Instance.new("TextLabel")
-	lbl.Size = UDim2.new(1,0,0,16)
-	lbl.BackgroundTransparency = 1
-	lbl.Font = Enum.Font.Gotham
-	lbl.TextSize = 13
-	lbl.TextColor3 = chestColors[rarity]
-	lbl.Text = rarity.." - 0"
-	lbl.Parent = Frame
-	chestLabels[rarity] = lbl
-end
-
-local function registerChest(rarity)
-	if chestCount[rarity] then
-		chestCount[rarity] += 1
-		local lbl = chestLabels[rarity]
-		if lbl then
-			lbl.Text = rarity.." - "..chestCount[rarity]
-		end
-	end
-end
-
 
 -------------------------------------------------
 -- CHEST RARITY DATA
@@ -800,19 +740,41 @@ DamageLabel.Text = "Last Hit: 0"
 DamageLabel.TextColor3 = Color3.new(1,1,1)
 DamageLabel.Parent = Frame
 
-PopupRemote.OnClientEvent:Connect(function(a,b,damage,color)
+-------------------------------------------------
+-- DAMAGE HOOK (WORKING VERSION)
+-------------------------------------------------
 
-	if typeof(damage) == "number" and damage > 0 then
+local mt = getrawmetatable(game)
+local old = mt.__namecall
+setreadonly(mt,false)
 
-		DamageLabel.Text = "Last Hit: "..damage
+mt.__namecall = newcclosure(function(self,...)
 
-		if typeof(color) == "Color3" then
-			DamageLabel.TextColor3 = color
+	local args = {...}
+	local method = getnamecallmethod()
+
+	if tostring(self) == "PopupDamage" and method == "Fire" then
+
+		local damage = args[3]
+		local color = args[4]
+
+		if typeof(damage) == "number" and damage > 0 then
+
+			DamageLabel.Text = "Last Hit: "..damage
+
+			if typeof(color) == "Color3" then
+				DamageLabel.TextColor3 = color
+			end
+
 		end
 
 	end
 
+	return old(self,...)
+
 end)
+
+setreadonly(mt,true)
 
 -------------------------------------------------
 -- CHEST COUNT
@@ -828,9 +790,6 @@ ChestTitle.TextColor3 = Color3.new(1,1,1)
 ChestTitle.Parent = Frame
 
 local chestRarities = {
-	"COMMON",
-	"UNCOMMON",
-	"RARE",
 	"EPIC",
 	"LEGENDARY",
 	"MYTHIC",
@@ -838,13 +797,10 @@ local chestRarities = {
 }
 
 local chestColors = {
-	COMMON = Color3.fromRGB(200,200,200),
-	UNCOMMON = Color3.fromRGB(90,255,140),
-	RARE = Color3.fromRGB(80,170,255),
-	EPIC = Color3.fromRGB(210,120,255),
-	LEGENDARY = Color3.fromRGB(255,210,80),
-	MYTHIC = Color3.fromRGB(255,80,80),
-	CURSED = Color3.fromRGB(255,40,40)
+	EPIC = Color3.fromRGB(255,110,210),
+	LEGENDARY = Color3.fromRGB(255,200,60),
+	MYTHIC = Color3.fromRGB(255,60,60),
+	CURSED = Color3.fromRGB(255,80,80)
 }
 
 local chestCount = {}
@@ -869,6 +825,10 @@ end
 
 function registerChest(rarity)
 
+	if rarity == "COMMON" then return end
+	if rarity == "UNCOMMON" then return end
+	if rarity == "RARE" then return end
+
 	if chestCount[rarity] then
 
 		chestCount[rarity] += 1
@@ -889,11 +849,3 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
-
-
-
-
-
-
-
