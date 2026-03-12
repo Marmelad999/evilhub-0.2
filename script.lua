@@ -1,9 +1,9 @@
---// EvilHub 0.24
+--// EvilHub 0.25
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.23",
+	Name = "EvilHub 0.25",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -606,7 +606,8 @@ VisualTab:CreateToggle({
 -------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.2",
+	Title = "EvilHub 0.25",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
