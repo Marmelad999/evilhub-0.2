@@ -357,6 +357,37 @@ local function detectChest(model)
 	local rarity = chestRarity[part.BrickColor.Name]
 	if not rarity then return end
 
+	-------------------------------------------------
+-- CHEST NOTIFICATIONS
+-------------------------------------------------
+
+if rarity.name == "LEGENDARY" then
+
+	Rayfield:Notify({
+		Title = "Free EPIC!",
+		Content = "LEGENDARY chest spawned",
+		Duration = 5
+	})
+
+elseif rarity.name == "MYTHIC" then
+
+	Rayfield:Notify({
+		Title = "Hell nah..",
+		Content = "MYTHIC chest spawned",
+		Duration = 5
+	})
+
+elseif rarity.name == "CURSED" then
+
+	Rayfield:Notify({
+		Title = "I HATE YOU",
+		Content = "CURSED chest spawned",
+		Duration = 5
+	})
+
+end
+	
+	
 	-- Billboard
 	local billboard = createChestBillboard(part, rarity.name, rarity.color)
 
@@ -579,8 +610,3 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
-
-
-
-
