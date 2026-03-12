@@ -1,131 +1,160 @@
--- Rayfield UI
+-- Rayfield
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
- Name = "Evilhub 0.2",
- LoadingTitle = "Initializing...",
- LoadingSubtitle = "Rayfield UI",
- ConfigurationSaving = {
-  Enabled = true,
-  FolderName = "LevelBound",
-  FileName = "Config"
- }
+    Name = "Combat Dev Tool",
+    LoadingTitle = "Loading",
+    LoadingSubtitle = "Rayfield UI",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "CombatDev",
+        FileName = "Settings"
+    }
 })
 
+-- Services
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
-local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AttackV2")
-
--- настройки киллауры
-local Aura = {
- Enabled = false,
- Range = 300,
- Delay = 0.2,
- Combo = 1
-}
-
--- обновление персонажа
 player.CharacterAdded:Connect(function(char)
- character = char
- hrp = char:WaitForChild("HumanoidRootPart")
- Aura.Combo = 1
+    character = char
+    hrp = char:WaitForChild("HumanoidRootPart")
 end)
 
--- комбо система
-local function nextCombo()
+-- Remote
+local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AttackV2")
 
- Aura.Combo += 1
+-- Settings
+local Settings = {
+    Enabled = false,
+    KillAura = false,
+    SmartTarget = false,
+    Debug = false,
 
- if Aura.Combo > 3 then
-  Aura.Combo = 1
- end
+    Range = 25,
+    HitsPerTarget = 5,
+    AttackDelay = 0.1
+}
 
- return Aura.Combo
-
+-- Debug printer
+local function debugPrint(...)
+    if Settings.Debug then
+        print("[AutoAttack]", ...)
+    end
 end
 
--- поиск ближайшей цели
+-- Get targets
 local function getTargets()
 
- local targets = {}
+    local targets = {}
 
- for _,model in ipairs(Workspace.Characters:GetChildren()) do
+    for _, model in ipairs(Workspace.Characters:GetChildren()) do
 
-  if model ~= character then
+        if model:IsA("Model") and model ~= character then
 
-   local hum = model:FindFirstChildOfClass("Humanoid")
-   local thrp = model:FindFirstChild("HumanoidRootPart")
-   local id = model:GetAttribute("ID")
+            local mobHRP = model:FindFirstChild("HumanoidRootPart")
+            local mobId = model:GetAttribute("ID")
 
-   if hum and hum.Health > 0 and thrp and id then
-    table.insert(targets, model)
-   end
+            if mobHRP and mobId then
 
-  end
- end
+                local distance = (mobHRP.Position - hrp.Position).Magnitude
 
- return targets
+                if distance <= Settings.Range then
+                    table.insert(targets, {
+                        id = mobId,
+                        distance = distance
+                    })
+                end
 
-end
+            end
 
--- направление удара (ИСПРАВЛЕНО)
-local function getDirection(targetHRP)
-
- local cam = Workspace.CurrentCamera
- local origin = cam.CFrame.Position
-
- -- немного выше центра модели
- local targetPos = targetHRP.Position + Vector3.new(0,1.5,0)
-
- local dir = (targetPos - origin).Unit
-
- return string.format("%.2f:%.2f:%.2f", dir.X, dir.Y, dir.Z)
-
-end
-
--- цикл киллауры
-task.spawn(function()
-
- while true do
-
-  if Aura.Enabled and hrp then
-
-   local target = getClosestTarget()
-
-   if target then
-
-    local id = target:GetAttribute("ID")
-    local thrp = target:FindFirstChild("HumanoidRootPart")
-
-    if id and thrp then
-
-     local combo = nextCombo()
-
-     -- start attack
-     AttackRemote:FireServer(3, combo)
-
-     -- direction
-     AttackRemote:FireServer(4, combo, getDirection(thrp))
-
-     -- hit confirm
-     AttackRemote:FireServer(5, combo, {id})
-
-     -- finish attack
-     AttackRemote:FireServer(1, combo)
+        end
 
     end
-   end
-  end
 
-  task.wait(Aura.Delay)
+    return targets
 
- end
+end
+
+-- Get closest target
+local function getClosestTarget(targets)
+
+    local closest = nil
+    local minDist = math.huge
+
+    for _, target in ipairs(targets) do
+
+        if target.distance < minDist then
+            minDist = target.distance
+            closest = target
+        end
+
+    end
+
+    return closest
+
+end
+
+-- Attack function
+local function attackTarget(id)
+
+    for i = 1, Settings.HitsPerTarget do
+        AttackRemote:FireServer(1,1,{id})
+    end
+
+end
+
+-- Main loop
+task.spawn(function()
+
+    while true do
+
+        if Settings.Enabled and hrp then
+
+            local targets = getTargets()
+
+            debugPrint("Targets found:", #targets)
+
+            if #targets > 0 then
+
+                -- Kill Aura (attack all)
+                if Settings.KillAura then
+
+                    for _, target in ipairs(targets) do
+                        attackTarget(target.id)
+                        debugPrint("KillAura attacking:", target.id)
+                    end
+
+                -- Smart target (closest only)
+                elseif Settings.SmartTarget then
+
+                    local closest = getClosestTarget(targets)
+
+                    if closest then
+                        attackTarget(closest.id)
+                        debugPrint("SmartTarget attacking:", closest.id)
+                    end
+
+                -- Normal mode
+                else
+
+                    attackTarget(targets[1].id)
+                    debugPrint("Attacking:", targets[1].id)
+
+                end
+
+            end
+
+        end
+
+        task.wait(Settings.AttackDelay)
+
+    end
 
 end)
 
@@ -133,37 +162,69 @@ end)
 local CombatTab = Window:CreateTab("Combat", 4483362458)
 
 CombatTab:CreateToggle({
- Name = "KillAura",
- CurrentValue = false,
- Flag = "KillAuraToggle",
- Callback = function(v)
-  Aura.Enabled = v
- end
+    Name = "Auto Attack",
+    CurrentValue = false,
+    Callback = function(state)
+        Settings.Enabled = state
+    end
+})
+
+CombatTab:CreateToggle({
+    Name = "Kill Aura",
+    CurrentValue = false,
+    Callback = function(state)
+        Settings.KillAura = state
+    end
+})
+
+CombatTab:CreateToggle({
+    Name = "Smart Target (Closest)",
+    CurrentValue = false,
+    Callback = function(state)
+        Settings.SmartTarget = state
+    end
+})
+
+CombatTab:CreateToggle({
+    Name = "Debug Mode",
+    CurrentValue = false,
+    Callback = function(state)
+        Settings.Debug = state
+    end
 })
 
 CombatTab:CreateSlider({
- Name = "Aura Range",
- Range = {10,500},
- Increment = 5,
- Suffix = " studs",
- CurrentValue = 300,
- Flag = "AuraRange",
- Callback = function(v)
-  Aura.Range = v
- end
+    Name = "Attack Range",
+    Range = {5, 150},
+    Increment = 1,
+    CurrentValue = 25,
+    Callback = function(value)
+        Settings.Range = value
+    end
 })
 
 CombatTab:CreateSlider({
- Name = "Aura Delay",
- Range = {1,20},
- Increment = 1,
- Suffix = " ticks",
- CurrentValue = 4,
- Flag = "AuraDelay",
- Callback = function(v)
-
-  Aura.Delay = v * 0.05
-
- end
+    Name = "Hits Per Target",
+    Range = {1, 100},
+    Increment = 1,
+    CurrentValue = 5,
+    Callback = function(value)
+        Settings.HitsPerTarget = value
+    end
 })
 
+CombatTab:CreateSlider({
+    Name = "Attack Delay",
+    Range = {0.01, 1},
+    Increment = 0.01,
+    CurrentValue = 0.1,
+    Callback = function(value)
+        Settings.AttackDelay = value
+    end
+})
+
+Rayfield:Notify({
+    Title = "Loaded",
+    Content = "Combat system ready",
+    Duration = 5
+})
