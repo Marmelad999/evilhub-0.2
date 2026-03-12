@@ -2,7 +2,7 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
- Name = "LevelBound Helper",
+ Name = "Evil Hub 0.2",
  LoadingTitle = "Initializing...",
  LoadingSubtitle = "Rayfield UI",
  ConfigurationSaving = {
@@ -146,3 +146,4 @@ CombatTab:CreateSlider({
   Aura.Delay = v * 0.05
  end
 })
+
