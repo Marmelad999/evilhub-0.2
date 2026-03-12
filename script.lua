@@ -18,17 +18,15 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
+--// Folders
+local Characters = Workspace:WaitForChild("Characters")
+local Tower = Workspace:WaitForChild("Tower")
+
 --// Player
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
-
-player.CharacterAdded:Connect(function(char)
-	character = char
-	hrp = char:WaitForChild("HumanoidRootPart")
-	humanoid = char:WaitForChild("Humanoid")
-end)
 
 --// Remote
 local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AttackV2")
@@ -47,6 +45,30 @@ local MobESP = false
 local MiscESP = false
 
 local ActiveESP = {}
+
+-------------------------------------------------
+-- CHARACTER RESPAWN
+-------------------------------------------------
+
+local function onCharacter(char)
+
+	character = char
+	hrp = char:WaitForChild("HumanoidRootPart")
+	humanoid = char:WaitForChild("Humanoid")
+
+	humanoid.WalkSpeed = WalkSpeed
+
+	humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+
+		if humanoid.WalkSpeed ~= WalkSpeed then
+			humanoid.WalkSpeed = WalkSpeed
+		end
+
+	end)
+
+end
+
+player.CharacterAdded:Connect(onCharacter)
 
 -------------------------------------------------
 -- Direction
@@ -68,14 +90,14 @@ local function getDirectionString(targetHRP)
 end
 
 -------------------------------------------------
--- AutoAttack
+-- AUTO ATTACK
 -------------------------------------------------
 
 local function getMobs()
 
 	local mobs = {}
 
-	for _,mob in ipairs(Workspace.Characters:GetChildren()) do
+	for _,mob in ipairs(Characters:GetChildren()) do
 
 		if mob == character then continue end
 		if Players:GetPlayerFromCharacter(mob) then continue end
@@ -128,33 +150,12 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- WalkSpeed Loop
--------------------------------------------------
-
-task.spawn(function()
-
-	while true do
-
-		if humanoid then
-			humanoid.WalkSpeed = WalkSpeed
-		end
-
-		task.wait(0.2)
-
-	end
-
-end)
-
--------------------------------------------------
 -- ESP UI
 -------------------------------------------------
 
-local function createESP(obj,text,color)
+local function createESP(part,text,color)
 
-	if ActiveESP[obj] then return end
-
-	local part = obj:IsA("Model") and obj:FindFirstChild("HumanoidRootPart") or obj
-	if not part then return end
+	if ActiveESP[part] then return end
 
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "ESP"
@@ -184,63 +185,101 @@ local function createESP(obj,text,color)
 	label.BackgroundTransparency = 1
 	label.Text = text
 	label.TextColor3 = color
-	label.TextScaled = true
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = 11
+	label.TextScaled = false
 
 	gui.Parent = part
 
-	ActiveESP[obj] = gui
+	ActiveESP[part] = gui
 
 end
 
-local function removeESP(obj)
+local function removeESP(part)
 
-	if ActiveESP[obj] then
-		ActiveESP[obj]:Destroy()
-		ActiveESP[obj] = nil
+	if ActiveESP[part] then
+		ActiveESP[part]:Destroy()
+		ActiveESP[part] = nil
 	end
 
 end
 
 -------------------------------------------------
--- ESP Scanner
+-- MOB ESP
 -------------------------------------------------
 
-local function scanESP()
+local function updateMobESP()
 
-	for _,obj in ipairs(Workspace:GetDescendants()) do
+	for _,mob in ipairs(Characters:GetChildren()) do
 
-		-- mobs
-		if MobESP and obj:IsA("Model") then
+		if mob ~= character and not Players:GetPlayerFromCharacter(mob) then
 
-			if obj ~= character and not Players:GetPlayerFromCharacter(obj) then
-				createESP(obj,obj.Name,Color3.fromRGB(255,255,255))
+			local hrp2 = mob:FindFirstChild("HumanoidRootPart")
+
+			if hrp2 then
+
+				if MobESP then
+					createESP(hrp2,mob.Name,Color3.fromRGB(255,255,255))
+				else
+					removeESP(hrp2)
+				end
+
 			end
 
 		end
 
-		-- misc
-		if MiscESP then
+	end
+
+end
+
+-------------------------------------------------
+-- MISC ESP
+-------------------------------------------------
+
+local function updateMiscESP()
+
+	for _,obj in ipairs(Tower:GetDescendants()) do
+
+		if obj:IsA("BasePart") then
 
 			if obj.Name == "Ruby" then
-				createESP(obj,"Ruby",Color3.fromRGB(220,20,60))
+				if MiscESP then
+					createESP(obj,"Ruby",Color3.fromRGB(220,20,60))
+				else
+					removeESP(obj)
+				end
 			end
 
 			if obj.Name == "GoldBag" then
-				createESP(obj,"GoldBag",Color3.fromRGB(255,0,255))
+				if MiscESP then
+					createESP(obj,"GoldBag",Color3.fromRGB(255,0,255))
+				else
+					removeESP(obj)
+				end
 			end
 
 			if obj.Name == "Chest" then
-				createESP(obj,"Chest",Color3.fromRGB(255,215,0))
+				if MiscESP then
+					createESP(obj,"Chest",Color3.fromRGB(255,215,0))
+				else
+					removeESP(obj)
+				end
 			end
 
 			if obj.Name == "SecretChest" then
-				createESP(obj,"SecretChest",Color3.fromRGB(170,0,255))
+				if MiscESP then
+					createESP(obj,"SecretChest",Color3.fromRGB(170,0,255))
+				else
+					removeESP(obj)
+				end
 			end
 
 			if obj.Name == "ChallengeRug" then
-				createESP(obj,"Challenge",Color3.fromRGB(0,200,255))
+				if MiscESP then
+					createESP(obj,"Challenge",Color3.fromRGB(0,200,255))
+				else
+					removeESP(obj)
+				end
 			end
 
 		end
@@ -248,12 +287,20 @@ local function scanESP()
 	end
 
 end
+
+-------------------------------------------------
+-- ESP LOOP
+-------------------------------------------------
 
 task.spawn(function()
 
 	while true do
-		scanESP()
-		task.wait(2)
+
+		updateMobESP()
+		updateMiscESP()
+
+		task.wait(1)
+
 	end
 
 end)
@@ -302,7 +349,13 @@ CombatTab:CreateSlider({
 	CurrentValue = 16,
 	Flag = "WalkSpeed",
 	Callback = function(v)
+
 		WalkSpeed = v
+
+		if humanoid then
+			humanoid.WalkSpeed = v
+		end
+
 	end
 })
 
