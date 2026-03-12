@@ -1,4 +1,4 @@
---// AutoAttack Script
+--// AutoAttack Script (Multi Target)
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -34,7 +34,7 @@ local AutoAttackEnabled = false
 local AttackRange = 20
 local AttackCooldown = 0.15
 
---// Direction function (FIXED NaN)
+--// Direction function (NaN protection)
 local function getDirectionString(targetHRP)
 
 	local vec = targetHRP.Position - hrp.Position
@@ -50,11 +50,10 @@ local function getDirectionString(targetHRP)
 
 end
 
---// Find closest mob
-local function getClosestMob()
+--// Get all mobs in range
+local function getMobsInRange()
 
-	local closestMob = nil
-	local closestDistance = AttackRange
+	local mobs = {}
 
 	for _, mob in ipairs(Workspace.Characters:GetChildren()) do
 
@@ -80,14 +79,13 @@ local function getClosestMob()
 
 		local distance = (mobHRP.Position - hrp.Position).Magnitude
 
-		if distance <= closestDistance then
-			closestDistance = distance
-			closestMob = mob
+		if distance <= AttackRange then
+			table.insert(mobs, mob)
 		end
 
 	end
 
-	return closestMob
+	return mobs
 
 end
 
@@ -98,9 +96,9 @@ task.spawn(function()
 
 		if AutoAttackEnabled and hrp then
 
-			local mob = getClosestMob()
+			local mobs = getMobsInRange()
 
-			if mob then
+			for _, mob in ipairs(mobs) do
 
 				local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 
@@ -108,10 +106,10 @@ task.spawn(function()
 
 					local direction = getDirectionString(mobHRP)
 
-					-- Target call
+					-- Target
 					AttackRemote:FireServer(5,1,mob)
 
-					-- Direction call
+					-- Direction
 					AttackRemote:FireServer(4,1,direction)
 
 				end
@@ -161,6 +159,6 @@ CombatTab:CreateSlider({
 
 Rayfield:Notify({
 	Title = "Loaded",
-	Content = "AutoAttack Ready",
+	Content = "Multi Target AutoAttack Ready",
 	Duration = 5
 })
