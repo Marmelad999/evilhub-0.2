@@ -51,10 +51,9 @@ local function nextCombo()
 end
 
 -- поиск ближайшей цели
-local function getClosestTarget()
+local function getTargets()
 
- local closest
- local dist = Aura.Range
+ local targets = {}
 
  for _,model in ipairs(Workspace.Characters:GetChildren()) do
 
@@ -65,19 +64,13 @@ local function getClosestTarget()
    local id = model:GetAttribute("ID")
 
    if hum and hum.Health > 0 and thrp and id then
-
-    local d = (thrp.Position - hrp.Position).Magnitude
-
-    if d <= dist then
-     dist = d
-     closest = model
-    end
-
+    table.insert(targets, model)
    end
+
   end
  end
 
- return closest
+ return targets
 
 end
 
@@ -173,3 +166,4 @@ CombatTab:CreateSlider({
 
  end
 })
+
