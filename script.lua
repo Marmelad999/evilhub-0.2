@@ -1,11 +1,11 @@
---// AutoAttack Script (Multi Target)
-
+```lua
+--// Load UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "AutoAttack",
+	Name = "LevelBound Helper",
 	LoadingTitle = "Loading...",
-	LoadingSubtitle = "Rayfield UI",
+	LoadingSubtitle = "AutoAttack + ESP",
 	ConfigurationSaving = {
 		Enabled = false
 	}
@@ -34,7 +34,16 @@ local AutoAttackEnabled = false
 local AttackRange = 20
 local AttackCooldown = 0.15
 
---// Direction function (NaN protection)
+--// ESP Settings
+local MobESPEnabled = false
+local RubyESPEnabled = false
+
+local ActiveBillboards = {}
+
+-------------------------------------------------
+-- Direction (NaN protection)
+-------------------------------------------------
+
 local function getDirectionString(targetHRP)
 
 	local vec = targetHRP.Position - hrp.Position
@@ -50,36 +59,28 @@ local function getDirectionString(targetHRP)
 
 end
 
---// Get all mobs in range
+-------------------------------------------------
+-- Get mobs in range
+-------------------------------------------------
+
 local function getMobsInRange()
 
 	local mobs = {}
 
 	for _, mob in ipairs(Workspace.Characters:GetChildren()) do
 
-		if mob == character then
-			continue
-		end
+		if mob == character then continue end
+		if Players:GetPlayerFromCharacter(mob) then continue end
 
-		-- ignore players
-		if Players:GetPlayerFromCharacter(mob) then
-			continue
-		end
-
-		local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 		local hum = mob:FindFirstChildOfClass("Humanoid")
+		local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 
-		if not mobHRP or not hum then
-			continue
-		end
+		if not hum or not mobHRP then continue end
+		if hum.Health <= 0 then continue end
 
-		if hum.Health <= 0 then
-			continue
-		end
+		local dist = (mobHRP.Position - hrp.Position).Magnitude
 
-		local distance = (mobHRP.Position - hrp.Position).Magnitude
-
-		if distance <= AttackRange then
+		if dist <= AttackRange then
 			table.insert(mobs, mob)
 		end
 
@@ -89,7 +90,10 @@ local function getMobsInRange()
 
 end
 
---// AutoAttack loop
+-------------------------------------------------
+-- AutoAttack Loop
+-------------------------------------------------
+
 task.spawn(function()
 
 	while true do
@@ -106,10 +110,7 @@ task.spawn(function()
 
 					local direction = getDirectionString(mobHRP)
 
-					-- Target
 					AttackRemote:FireServer(5,1,mob)
-
-					-- Direction
 					AttackRemote:FireServer(4,1,direction)
 
 				end
@@ -124,41 +125,13 @@ task.spawn(function()
 
 end)
 
---// UI
-local CombatTab = Window:CreateTab("Combat",4483362458)
+-------------------------------------------------
+-- Billboard ESP creation
+-------------------------------------------------
 
-CombatTab:CreateToggle({
-	Name = "Auto Attack",
-	CurrentValue = false,
-	Callback = function(v)
-		AutoAttackEnabled = v
-	end
-})
+local function createBillboard(obj, text, color)
 
-CombatTab:CreateSlider({
-	Name = "Attack Range",
-	Range = {5,100},
-	Increment = 1,
-	Suffix = "Range",
-	CurrentValue = 20,
-	Callback = function(v)
-		AttackRange = v
-	end
-})
+	if ActiveBillboards[obj] then return end
 
-CombatTab:CreateSlider({
-	Name = "Attack Cooldown",
-	Range = {0.05,1},
-	Increment = 0.01,
-	Suffix = "s",
-	CurrentValue = 0.15,
-	Callback = function(v)
-		AttackCooldown = v
-	end
-})
-
-Rayfield:Notify({
-	Title = "Loaded",
-	Content = "Multi Target AutoAttack Ready",
-	Duration = 5
-})
+	local part = obj:IsA("Model") and obj:FindFirstChild("Human
+```
