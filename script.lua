@@ -1,9 +1,11 @@
---// EvilHub 0.3 fuck this
+
+
+--// EvilHub 0.27 TRUE
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.3",
+	Name = "EvilHub 0.27",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -381,8 +383,6 @@ local function detectChest(model)
 
 	local rarity = chestRarity[part.BrickColor.Name]
 	if not rarity then return end
-
-	registerChest(rarity.name)
 	-------------------------------------------------
 -- CHEST NOTIFICATIONS
 -------------------------------------------------
@@ -657,80 +657,9 @@ VisualTab:CreateToggle({
 })
 
 -------------------------------------------------
--- HUD UI (Vertical, Full Chest Rarities)
--------------------------------------------------
-
-local PopupRemote = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("PopupDamage")
-local playerGui = player:WaitForChild("PlayerGui")
-
-local Hud = Instance.new("ScreenGui")
-Hud.Name = "EvilHUD"
-Hud.ResetOnSpawn = false
-Hud.Parent = playerGui
-
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0,220,0,70)
-Frame.Position = UDim2.new(0,20,0,100)
-Frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
-Frame.BackgroundTransparency = 0.15
-Frame.Parent = Hud
-
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0,8)
-Corner.Parent = Frame
-
-local Stroke = Instance.new("UIStroke")
-Stroke.Color = Color3.fromRGB(80,80,80)
-Stroke.Thickness = 1.5
-Stroke.Parent = Frame
-
-local Layout = Instance.new("UIListLayout")
-Layout.SortOrder = Enum.SortOrder.LayoutOrder
-Layout.Padding = UDim.new(0,4)
-Layout.Parent = Frame
-
--------------------------------------------------
--- TITLE
--------------------------------------------------
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,0,0,20)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.Text = "Dungeon Monitor"
-Title.TextColor3 = Color3.new(1,1,1)
-Title.Parent = Frame
-
--------------------------------------------------
--- TIMER
--------------------------------------------------
-
-local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Size = UDim2.new(1,0,0,18)
-TimerLabel.BackgroundTransparency = 1
-TimerLabel.Font = Enum.Font.Gotham
-TimerLabel.TextSize = 13
-TimerLabel.TextColor3 = Color3.fromRGB(200,200,200)
-TimerLabel.Text = "Time: 00:00"
-TimerLabel.Parent = Frame
-
-local startTime = os.clock()
-
-task.spawn(function()
-	while true do
-		local elapsed = math.floor(os.clock() - startTime)
-		local minutes = math.floor(elapsed / 60)
-		local seconds = elapsed % 60
-		TimerLabel.Text = string.format("Time: %02d:%02d",minutes,seconds)
-		task.wait(1)
-	end
-end)
--------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.3",
+	Title = "EvilHub 0.27",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
