@@ -382,11 +382,11 @@ local function detectChest(model)
 
 	if MiscESPObjects[model] then return end
 
-	local part = model:FindFirstChild("Down") or model:FindFirstChild("Up")
+	local part = model:FindFirstChild("Down")
 
 	if not part then
-		task.wait(0.2)
-		part = model:FindFirstChild("Down") or model:FindFirstChild("Up")
+		task.wait(0.25)
+		part = model:FindFirstChild("Down")
 	end
 
 	if not part then return end
@@ -400,7 +400,7 @@ local function detectChest(model)
 if rarity.name == "LEGENDARY" then
 
 	Rayfield:Notify({
-		Title = "Free EPIC!",
+		Title = "Trash leg chest!",
 		Content = "LEGENDARY chest spawned",
 		Duration = 5
 	})
@@ -773,6 +773,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
