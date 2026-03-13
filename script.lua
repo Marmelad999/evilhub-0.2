@@ -1,4 +1,4 @@
---// EvilHub 0.31 2
+--// EvilHub 0.31 3
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -202,6 +202,7 @@ local function createESP(part,text,color,isBoss)
 	label.TextSize = 12
 	label.TextColor3 = color
 	label.TextStrokeTransparency = 0.6
+	label.TextScaled = true
 	label.Text = text
 
 	-- BOSS STYLE
@@ -773,6 +774,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
