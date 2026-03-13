@@ -1,4 +1,4 @@
---// EvilHub 0.31 
+--// EvilHub 0.31 1
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -256,16 +256,16 @@ local function addMobESP(mob)
 
 	if not MobESPObjects[hrp2] then
 
-		local isBoss = mob:GetAttribute("isBoss")
+		local isBoss = mob:GetAttribute("isBoss") == true
 
 local color = Color3.fromRGB(255,255,255)
 
 if isBoss then
-	color = Color3.fromRGB(255,50,50)
+	color = Color3.fromRGB(255,0,0)
 end
 
 MobESPObjects[hrp2] =
-	createESP(hrp2,mob.Name,color,isBoss)
+	createESP(hrp2, mob.Name, color, isBoss)
 
 	end
 
@@ -773,5 +773,6 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
