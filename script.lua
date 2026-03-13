@@ -1,5 +1,3 @@
-
-
 --// EvilHub 0.3 TRU
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
@@ -756,7 +754,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
-
 -------------------------------------------------
 
 Rayfield:Notify({
@@ -764,5 +761,3 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
-
