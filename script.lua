@@ -1,4 +1,4 @@
---// EvilHub 0.3 TRU
+--// EvilHub 0.3 TRUe
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -29,6 +29,7 @@ local humanoid = character:WaitForChild("Humanoid")
 
 --// Remote
 local AttackRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AttackV2")
+local PopupDamage = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("PopupDamage")
 
 -------------------------------------------------
 -- SETTINGS
@@ -761,3 +762,4 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
