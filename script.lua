@@ -1,6 +1,6 @@
 
 
---// EvilHub 0.3
+--// EvilHub 0.3 TRU
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -47,106 +47,6 @@ local MiscESP = false
 
 local MobESPObjects = {}
 local MiscESPObjects = {}
-
--- GUI
-local gui = Instance.new("ScreenGui")
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,120,0,140)
-frame.Position = UDim2.new(0,20,0.5,-70)
-frame.BackgroundColor3 = Color3.fromRGB(25,25,30)
-frame.BorderSizePixel = 0
-frame.Parent = gui
-
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0,8)
-corner.Parent = frame
-
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(80,120,255)
-stroke.Thickness = 1
-stroke.Parent = frame
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,6)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.VerticalAlignment = Enum.VerticalAlignment.Top
-layout.Parent = frame
-
--- Timer
-local timerLabel = Instance.new("TextLabel")
-timerLabel.Size = UDim2.new(1,0,0,18)
-timerLabel.BackgroundTransparency = 1
-timerLabel.Text = "TIME"
-timerLabel.TextColor3 = Color3.fromRGB(180,180,180)
-timerLabel.TextScaled = true
-timerLabel.Font = Enum.Font.Gotham
-timerLabel.Parent = frame
-
-local timerValue = Instance.new("TextLabel")
-timerValue.Size = UDim2.new(1,0,0,28)
-timerValue.BackgroundTransparency = 1
-timerValue.Text = "00:00"
-timerValue.TextColor3 = Color3.fromRGB(255,255,255)
-timerValue.TextScaled = true
-timerValue.Font = Enum.Font.GothamBold
-timerValue.Parent = frame
-
--- HIT
-local hitLabel = Instance.new("TextLabel")
-hitLabel.Size = UDim2.new(1,0,0,18)
-hitLabel.BackgroundTransparency = 1
-hitLabel.Text = "HIT"
-hitLabel.TextColor3 = Color3.fromRGB(180,180,180)
-hitLabel.TextScaled = true
-hitLabel.Font = Enum.Font.Gotham
-hitLabel.Parent = frame
-
-local hitValue = Instance.new("TextLabel")
-hitValue.Size = UDim2.new(1,0,0,28)
-hitValue.BackgroundTransparency = 1
-hitValue.Text = "0"
-hitValue.TextColor3 = Color3.fromRGB(0,170,255)
-hitValue.TextScaled = true
-hitValue.Font = Enum.Font.GothamBold
-hitValue.Parent = frame
-
--- Timer logic (MM:SS)
-local startTime = tick()
-task.spawn(function()
-	while true do
-		local elapsed = math.floor(tick() - startTime)
-		local minutes = math.floor(elapsed / 60)
-		local seconds = elapsed % 60
-		timerValue.Text = string.format("%02d:%02d", minutes, seconds)
-		task.wait(1)
-	end
-end)
-
--- Кэш для последнего значения урона
-local lastHit = 0
-local newHit = nil
-
--- Listener для PopupDamage
-PopupDamage.OnClientEvent:Connect(function(...)
-    local args = {...}
-    local damage = args[4] -- строго [4] — число урона
-
-    if typeof(damage) == "number" and damage > 0 then
-        newHit = damage -- сохраняем новое значение, не обновляем GUI сразу
-    end
-end)
-
--- Обновление GUI через RenderStepped (30–60 FPS)
-game:GetService("RunService").RenderStepped:Connect(function()
-    if newHit and newHit ~= lastHit then
-        hitValue.Text = tostring(newHit)
-        lastHit = newHit
-        newHit = nil
-    end
-end)
 
 -------------------------------------------------
 -- CHEST RARITY DATA
@@ -756,6 +656,107 @@ VisualTab:CreateToggle({
 	end
 })
 
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,120,0,140)
+frame.Position = UDim2.new(0,20,0.5,-70)
+frame.BackgroundColor3 = Color3.fromRGB(25,25,30)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,8)
+corner.Parent = frame
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(80,120,255)
+stroke.Thickness = 1
+stroke.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,6)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.Parent = frame
+
+-- Timer
+local timerLabel = Instance.new("TextLabel")
+timerLabel.Size = UDim2.new(1,0,0,18)
+timerLabel.BackgroundTransparency = 1
+timerLabel.Text = "TIME"
+timerLabel.TextColor3 = Color3.fromRGB(180,180,180)
+timerLabel.TextScaled = true
+timerLabel.Font = Enum.Font.Gotham
+timerLabel.Parent = frame
+
+local timerValue = Instance.new("TextLabel")
+timerValue.Size = UDim2.new(1,0,0,28)
+timerValue.BackgroundTransparency = 1
+timerValue.Text = "00:00"
+timerValue.TextColor3 = Color3.fromRGB(255,255,255)
+timerValue.TextScaled = true
+timerValue.Font = Enum.Font.GothamBold
+timerValue.Parent = frame
+
+-- HIT
+local hitLabel = Instance.new("TextLabel")
+hitLabel.Size = UDim2.new(1,0,0,18)
+hitLabel.BackgroundTransparency = 1
+hitLabel.Text = "HIT"
+hitLabel.TextColor3 = Color3.fromRGB(180,180,180)
+hitLabel.TextScaled = true
+hitLabel.Font = Enum.Font.Gotham
+hitLabel.Parent = frame
+
+local hitValue = Instance.new("TextLabel")
+hitValue.Size = UDim2.new(1,0,0,28)
+hitValue.BackgroundTransparency = 1
+hitValue.Text = "0"
+hitValue.TextColor3 = Color3.fromRGB(0,170,255)
+hitValue.TextScaled = true
+hitValue.Font = Enum.Font.GothamBold
+hitValue.Parent = frame
+
+-- Timer logic (MM:SS)
+local startTime = tick()
+task.spawn(function()
+	while true do
+		local elapsed = math.floor(tick() - startTime)
+		local minutes = math.floor(elapsed / 60)
+		local seconds = elapsed % 60
+		timerValue.Text = string.format("%02d:%02d", minutes, seconds)
+		task.wait(1)
+	end
+end)
+
+-- Кэш для последнего значения урона
+local lastHit = 0
+local newHit = nil
+
+-- Listener для PopupDamage
+PopupDamage.OnClientEvent:Connect(function(...)
+    local args = {...}
+    local damage = args[4] -- строго [4] — число урона
+
+    if typeof(damage) == "number" and damage > 0 then
+        newHit = damage -- сохраняем новое значение, не обновляем GUI сразу
+    end
+end)
+
+-- Обновление GUI через RenderStepped (30–60 FPS)
+game:GetService("RunService").RenderStepped:Connect(function()
+    if newHit and newHit ~= lastHit then
+        hitValue.Text = tostring(newHit)
+        lastHit = newHit
+        newHit = nil
+    end
+end)
+
+
 -------------------------------------------------
 
 Rayfield:Notify({
@@ -763,4 +764,5 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
