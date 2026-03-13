@@ -1,4 +1,4 @@
---// EvilHub 0.32
+--// EvilHub 0.33
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -192,7 +192,7 @@ local function createESP(part,text,color,isBoss)
 
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "EvilESP"
-	gui.Size = UDim2.new(0,130,0,30)
+	gui.Size = UDim2.new(0,65,0,15)
 	gui.StudsOffset = Vector3.new(0,3,0)
 	gui.AlwaysOnTop = true
 	gui.MaxDistance = 999999
@@ -333,6 +333,17 @@ end
 Characters.ChildAdded:Connect(function(mob)
 
 	task.wait(0.2)
+
+	-- Проверка босса
+	local isBoss = mob:GetAttribute("IsBoss") == true
+
+	if isBoss then
+		Rayfield:Notify({
+			Title = "⚠ BOSS SPAWNED",
+			Content = mob.Name .. " has appeared!",
+			Duration = 6
+		})
+	end
 
 	addMobESP(mob)
 
@@ -791,6 +802,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
