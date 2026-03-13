@@ -1,9 +1,9 @@
---// EvilHub 0.3 TRUe
+--// EvilHub 0.31 
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.3",
+	Name = "EvilHub 0.31",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -171,8 +171,7 @@ end)
 -------------------------------------------------
 -- ESP CREATION (HP VERSION)
 -------------------------------------------------
-
-local function createESP(part,text,color)
+local function createESP(part,text,color,isBoss)
 
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "EvilESP"
@@ -200,16 +199,22 @@ local function createESP(part,text,color)
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(1,0,1,0)
 	label.BackgroundTransparency = 1
-	label.Font = Enum.Font.GothamBold
 	label.TextSize = 12
 	label.TextColor3 = color
 	label.TextStrokeTransparency = 0.6
 	label.Text = text
+
+	-- BOSS STYLE
+	if isBoss then
+		label.Font = Enum.Font.Arcade
+	else
+		label.Font = Enum.Font.GothamBold
+	end
+
 	label.Parent = frame
 
 	gui.Parent = part
 
-	-- HP updater
 	task.spawn(function()
 
 		local model = part.Parent
@@ -220,7 +225,6 @@ local function createESP(part,text,color)
 			if hum then
 
 				local hpPercent = math.floor((hum.Health / hum.MaxHealth) * 100)
-
 				label.Text = text.." ["..hpPercent.."%]"
 
 			end
@@ -234,7 +238,6 @@ local function createESP(part,text,color)
 	return gui
 
 end
-
 -------------------------------------------------
 -- MOB ESP
 -------------------------------------------------
@@ -253,8 +256,16 @@ local function addMobESP(mob)
 
 	if not MobESPObjects[hrp2] then
 
-		MobESPObjects[hrp2] =
-			createESP(hrp2,mob.Name,Color3.fromRGB(255,255,255))
+		local isBoss = mob:GetAttribute("isBoss")
+
+local color = Color3.fromRGB(255,255,255)
+
+if isBoss then
+	color = Color3.fromRGB(255,50,50)
+end
+
+MobESPObjects[hrp2] =
+	createESP(hrp2,mob.Name,color,isBoss)
 
 	end
 
@@ -758,8 +769,9 @@ end)
 -------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.3",
+	Title = "EvilHub 0.31",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
