@@ -1,4 +1,4 @@
---// EvilHub 0.31 3
+--// EvilHub 0.32
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -17,6 +17,7 @@ local Window = Rayfield:CreateWindow({
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
 
 local Characters = Workspace:WaitForChild("Characters")
 local Tower = Workspace:WaitForChild("Tower")
@@ -40,6 +41,22 @@ local AttackRange = 20
 local AttackCooldown = 0.15
 
 local WalkSpeed = 16
+
+-- Keybind подключение здесь
+local UserInputService = game:GetService("UserInputService")
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.G then
+            AutoAttack = not AutoAttack
+            Rayfield:Notify({
+                Title = "EvilHub",
+                Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
+                Duration = 3
+            })
+        end
+    end
+end)
 
 local MobESP = false
 local MiscESP = false
@@ -774,6 +791,7 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
 
 
 
