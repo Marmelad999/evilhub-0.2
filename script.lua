@@ -1,4 +1,4 @@
---// EvilHub 0.34
+--// EvilHub 0.35
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -483,10 +483,13 @@ local function addMiscESP(obj)
 	if not MiscESP then return end
 
 	-- CHEST ESP
-	if obj.Name == "Chest" or obj.Name == "SecretChest" then
-		detectChest(obj)
-		return
-	end
+if obj.Name == "Chest" 
+or obj.Name == "SecretChest"
+or obj.Name == "ChestChallenge" then
+
+	detectChest(obj)
+	return
+end
 
 	local color = miscColors[obj.Name]
 	if not color then return end
