@@ -1,4 +1,4 @@
---// EvilHub 0.33
+--// EvilHub 0.34
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -690,6 +690,79 @@ VisualTab:CreateToggle({
 			enableMiscESP()
 		else
 			disableMiscESP()
+		end
+
+	end
+})
+
+-------------------------------------------------
+-- GUI TAB
+-------------------------------------------------
+
+local GuiTab = Window:CreateTab("Interfaces",4483362458)
+
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- Blacksmith
+GuiTab:CreateButton({
+	Name = "Toggle Blacksmith",
+	Callback = function()
+
+		local gui = PlayerGui.InteractionZones:FindFirstChild("Blacksmith")
+		if gui then
+			gui.Visible = not gui.Visible
+		end
+
+	end
+})
+
+-- Dungeon Master
+GuiTab:CreateButton({
+	Name = "Toggle Dungeon Master",
+	Callback = function()
+
+		local gui = PlayerGui.InteractionZones:FindFirstChild("DungeonMasterCreate")
+		if gui then
+			gui.Visible = not gui.Visible
+		end
+
+	end
+})
+
+-- Merchant
+GuiTab:CreateButton({
+	Name = "Toggle Merchant",
+	Callback = function()
+
+		local gui = PlayerGui.InteractionZones:FindFirstChild("Merchant")
+		if gui then
+			gui.Visible = not gui.Visible
+		end
+
+	end
+})
+
+-- Warehouse
+GuiTab:CreateButton({
+	Name = "Toggle Warehouse",
+	Callback = function()
+
+		local gui = PlayerGui.InteractionZones:FindFirstChild("WarehouseMaster")
+		if gui then
+			gui.Visible = not gui.Visible
+		end
+
+	end
+})
+
+-- Auction House
+GuiTab:CreateButton({
+	Name = "Toggle Auction House",
+	Callback = function()
+
+		local gui = PlayerGui:FindFirstChild("AuctionHouseUI")
+		if gui then
+			gui.Enabled = not gui.Enabled
 		end
 
 	end
