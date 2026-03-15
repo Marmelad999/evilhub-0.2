@@ -631,7 +631,7 @@ CombatTab:CreateSlider({
 	Name = "Attack Range",
 	Range = {5,100},
 	Increment = 1,
-	CurrentValue = 20,
+	CurrentValue = 100,
 	Flag = "Range",
 	Callback = function(v)
 		AttackRange = v
@@ -640,9 +640,9 @@ CombatTab:CreateSlider({
 
 CombatTab:CreateSlider({
 	Name = "Attack Cooldown",
-	Range = {0.01,1},
+	Range = {0.001,1},
 	Increment = 0.01,
-	CurrentValue = 0.15,
+	CurrentValue = 0.01,
 	Flag = "Cooldown",
 	Callback = function(v)
 		AttackCooldown = v
@@ -653,7 +653,7 @@ CombatTab:CreateSlider({
 	Name = "WalkSpeed",
 	Range = {16,100},
 	Increment = 1,
-	CurrentValue = 16,
+	CurrentValue = 80,
 	Flag = "WalkSpeed",
 	Callback = function(v)
 		WalkSpeed = v
