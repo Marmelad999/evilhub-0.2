@@ -1,4 +1,4 @@
---// EvilHub 0.355TEST1
+--// EvilHub 0.35511
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -41,9 +41,6 @@ local AttackRange = 20
 local AttackCooldown = 0.15
 
 local WalkSpeed = 16
-
-local MicroTeleport = true
-local TeleportOffset = 3
 
 -- Keybind подключение здесь
 local UserInputService = game:GetService("UserInputService")
@@ -113,32 +110,24 @@ task.spawn(function()
 
 end)
 
-local function microTeleportAttack(mob)
-	
+local function spoofAttack(mob)
+
 	local mobHRP = mob:FindFirstChild("HumanoidRootPart")
 	if not mobHRP then return end
 	
-	local oldCFrame = hrp.CFrame
+	local old = hrp.CFrame
 	
-	-- телепорт рядом с мобом
-	hrp.CFrame = mobHRP.CFrame * CFrame.new(0,0,TeleportOffset)
-	
-	task.wait()
+	-- подмена позиции
+	hrp.CFrame = mobHRP.CFrame * CFrame.new(0,0,2)
 	
 	local dir = getDirectionString(mobHRP)
 	
-	if MicroTeleport then
-	microTeleportAttack(mob)
-else
 	AttackRemote:FireServer(5,1,mob)
 	AttackRemote:FireServer(4,1,dir)
-end
 	
-	task.wait()
-	
-	-- возвращаемся обратно
-	hrp.CFrame = oldCFrame
-	
+	-- возврат
+	hrp.CFrame = old
+
 end
 
 -------------------------------------------------
@@ -201,12 +190,8 @@ task.spawn(function()
 
 					local dir = getDirectionString(mobHRP)
 
-					if MicroTeleport then
-	microTeleportAttack(mob)
-else
-	AttackRemote:FireServer(5,1,mob)
-	AttackRemote:FireServer(4,1,dir)
-end
+					spoofAttack(mob)
+
 				end
 
 			end
@@ -912,11 +897,3 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
-
-
-
-
-
-
-
