@@ -1,4 +1,4 @@
---// EvilHub 0.355
+--// EvilHub 0.3552
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -170,7 +170,9 @@ task.spawn(function()
 
 					local dir = getDirectionString(mobHRP)
 
-					AttackRemote:FireServer(5,1,mob)
+					for i = 1,5 do
+	AttackRemote:FireServer(5,1,mob)
+end
 					AttackRemote:FireServer(4,1,dir)
 
 				end
