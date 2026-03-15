@@ -1,4 +1,4 @@
---// EvilHub 0.4
+--// EvilHub 0.4 Test
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -39,7 +39,7 @@ local PopupDamage = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("Pop
 local AutoAttack = false
 local AttackRange = 20
 local AttackCooldown = 0.15
-local MobFreeze = false
+local MobConfuse = false
 local WalkSpeed = 16
 
 -- Keybind подключение здесь
@@ -95,28 +95,28 @@ end)
 -------------------------------------------------
 -- WALKSPEED FIX
 -------------------------------------------------
+
 task.spawn(function()
 
 	while true do
 		
-		if MobFreeze then
+		if MobConfuse then
 			
 			for _,mob in ipairs(Characters:GetChildren()) do
 				
 				if mob == character then continue end
 				if Players:GetPlayerFromCharacter(mob) then continue end
 				
-				local hum = mob:FindFirstChildOfClass("Humanoid")
 				local mobHRP = mob:FindFirstChild("HumanoidRootPart")
+				local hum = mob:FindFirstChildOfClass("Humanoid")
 				
-				if hum and mobHRP and hum.Health > 0 then
+				if mobHRP and hum and hum.Health > 0 then
 					
-					-- ломаем движение
-					mobHRP.AssemblyLinearVelocity = Vector3.zero
-					mobHRP.AssemblyAngularVelocity = Vector3.zero
+					-- случайный поворот
+					local r = math.rad(math.random(-180,180))
 					
-					-- иногда ломает AI
-					hum:ChangeState(Enum.HumanoidStateType.Physics)
+					mobHRP.CFrame =
+						mobHRP.CFrame * CFrame.Angles(0,r,0)
 					
 				end
 				
@@ -124,12 +124,11 @@ task.spawn(function()
 			
 		end
 		
-		task.wait(0.1)
+		task.wait(0.15)
 		
 	end
 
 end)
-
 
 task.spawn(function()
 
@@ -663,11 +662,11 @@ CombatTab:CreateToggle({
 })
 
 CombatTab:CreateToggle({
-	Name = "Mob Freeze",
+	Name = "Mob Confuse",
 	CurrentValue = false,
-	Flag = "MobFreeze",
+	Flag = "MobConfuse",
 	Callback = function(v)
-		MobFreeze = v
+		MobConfuse = v
 	end
 })
 
