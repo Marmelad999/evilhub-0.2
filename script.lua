@@ -1,4 +1,4 @@
---// EvilHub 0.355
+--// EvilHub 0.4
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -39,7 +39,7 @@ local PopupDamage = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("Pop
 local AutoAttack = false
 local AttackRange = 20
 local AttackCooldown = 0.15
-
+local MobFreeze = false
 local WalkSpeed = 16
 
 -- Keybind подключение здесь
@@ -95,6 +95,41 @@ end)
 -------------------------------------------------
 -- WALKSPEED FIX
 -------------------------------------------------
+task.spawn(function()
+
+	while true do
+		
+		if MobFreeze then
+			
+			for _,mob in ipairs(Characters:GetChildren()) do
+				
+				if mob == character then continue end
+				if Players:GetPlayerFromCharacter(mob) then continue end
+				
+				local hum = mob:FindFirstChildOfClass("Humanoid")
+				local mobHRP = mob:FindFirstChild("HumanoidRootPart")
+				
+				if hum and mobHRP and hum.Health > 0 then
+					
+					-- ломаем движение
+					mobHRP.AssemblyLinearVelocity = Vector3.zero
+					mobHRP.AssemblyAngularVelocity = Vector3.zero
+					
+					-- иногда ломает AI
+					hum:ChangeState(Enum.HumanoidStateType.Physics)
+					
+				end
+				
+			end
+			
+		end
+		
+		task.wait(0.1)
+		
+	end
+
+end)
+
 
 task.spawn(function()
 
@@ -624,6 +659,15 @@ CombatTab:CreateToggle({
 	Flag = "AutoAttack",
 	Callback = function(v)
 		AutoAttack = v
+	end
+})
+
+CombatTab:CreateToggle({
+	Name = "Mob Freeze",
+	CurrentValue = false,
+	Flag = "MobFreeze",
+	Callback = function(v)
+		MobFreeze = v
 	end
 })
 
