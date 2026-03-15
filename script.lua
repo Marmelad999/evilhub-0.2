@@ -1,4 +1,4 @@
---// EvilHub 0.355112
+--// EvilHub 0.355
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -110,26 +110,6 @@ task.spawn(function()
 
 end)
 
-local function spoofAttack(mob)
-
-	local mobHRP = mob:FindFirstChild("HumanoidRootPart")
-	if not mobHRP then return end
-	
-	local old = hrp.CFrame
-	
-	-- подмена позиции
-	hrp.CFrame = mobHRP.CFrame * CFrame.new(0,0,2)
-	
-	local dir = getDirectionString(mobHRP)
-	
-	AttackRemote:FireServer(5,1,mob)
-	AttackRemote:FireServer(4,1,dir)
-	
-	-- возврат
-	hrp.CFrame = old
-
-end
-
 -------------------------------------------------
 -- AUTO ATTACK
 -------------------------------------------------
@@ -190,7 +170,8 @@ task.spawn(function()
 
 					local dir = getDirectionString(mobHRP)
 
-					spoofAttack(mob)
+					AttackRemote:FireServer(5,1,mob)
+					AttackRemote:FireServer(4,1,dir)
 
 				end
 
