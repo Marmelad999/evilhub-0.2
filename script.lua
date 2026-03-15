@@ -1,4 +1,4 @@
---// EvilHub 0.4 Test1
+--// EvilHub 0.355
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -39,7 +39,7 @@ local PopupDamage = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("Pop
 local AutoAttack = false
 local AttackRange = 20
 local AttackCooldown = 0.15
-local MobConfuse = false
+
 local WalkSpeed = 16
 
 -- Keybind подключение здесь
@@ -95,40 +95,6 @@ end)
 -------------------------------------------------
 -- WALKSPEED FIX
 -------------------------------------------------
-
-task.spawn(function()
-
-	while true do
-		
-		if MobConfuse then
-			
-			for _,mob in ipairs(Characters:GetChildren()) do
-				
-				if mob == character then continue end
-				if Players:GetPlayerFromCharacter(mob) then continue end
-				
-				local mobHRP = mob:FindFirstChild("HumanoidRootPart")
-				local hum = mob:FindFirstChildOfClass("Humanoid")
-				
-				if mobHRP and hum and hum.Health > 0 then
-					
-					-- случайный поворот
-					local r = math.rad(math.random(-180,180))
-					
-					mobHRP.CFrame =
-						mobHRP.CFrame * CFrame.Angles(0,r,0)
-					
-				end
-				
-			end
-			
-		end
-		
-		task.wait(0.15)
-		
-	end
-
-end)
 
 task.spawn(function()
 
@@ -658,15 +624,6 @@ CombatTab:CreateToggle({
 	Flag = "AutoAttack",
 	Callback = function(v)
 		AutoAttack = v
-	end
-})
-
-CombatTab:CreateToggle({
-	Name = "Mob Confuse",
-	CurrentValue = false,
-	Flag = "MobConfuse",
-	Callback = function(v)
-		MobConfuse = v
 	end
 })
 
