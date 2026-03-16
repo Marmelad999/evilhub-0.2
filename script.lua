@@ -292,7 +292,7 @@ local function createESP(part,text,color,isBoss)
 
 	-- BOSS STYLE
 	if isBoss then
-		label.Font = Enum.Font.Arcade
+		label.Font = Enum.Font.Gotham
 	else
 		label.Font = Enum.Font.GothamBold
 	end
