@@ -1,9 +1,9 @@
---// EvilHub 0.41
+--// EvilHub 0.45
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.4",
+	Name = "EvilHub 0.45",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -681,6 +681,56 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
+-- APPLY CONFIG
+-------------------------------------------------
+
+local function ApplyConfig()
+
+	local flags = Rayfield.Flags
+
+	if flags.AutoAttack ~= nil then
+		AutoAttack = flags.AutoAttack
+	end
+
+	if flags.Range ~= nil then
+		AttackRange = flags.Range
+	end
+
+	if flags.Cooldown ~= nil then
+		AttackCooldown = flags.Cooldown
+	end
+
+	if flags.WeaponMode ~= nil then
+		WeaponMode = flags.WeaponMode
+	end
+
+	if flags.WalkSpeed ~= nil then
+		WalkSpeed = flags.WalkSpeed
+	end
+
+	if flags.MobESP ~= nil then
+		MobESP = flags.MobESP
+
+		if MobESP then
+			enableMobESP()
+		else
+			disableMobESP()
+		end
+	end
+
+	if flags.MiscESP ~= nil then
+		MiscESP = flags.MiscESP
+
+		if MiscESP then
+			enableMiscESP()
+		else
+			disableMiscESP()
+		end
+	end
+
+end
+
+-------------------------------------------------
 -- UI
 -------------------------------------------------
 
@@ -792,6 +842,8 @@ VisualTab:CreateToggle({
 	end
 })
 
+
+
 -------------------------------------------------
 -- GUI TAB
 -------------------------------------------------
@@ -862,6 +914,13 @@ GuiTab:CreateButton({
 			gui.Enabled = not gui.Enabled
 		end
 
+	end
+})
+
+GuiTab:CreateButton({
+	Name = "Save Config",
+	Callback = function()
+		Rayfield:SaveConfiguration()
 	end
 })
 
@@ -998,3 +1057,9 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
+Rayfield:LoadConfiguration()
+
+task.wait(1)
+
+ApplyConfig()
