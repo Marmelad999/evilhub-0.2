@@ -1,4 +1,4 @@
---// EvilHub 0.452
+--// EvilHub 0.450
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -685,62 +685,6 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- APPLY CONFIG
--------------------------------------------------
-
-local function ApplyConfig()
-
-	local flags = Rayfield.Flags
-
-	if flags.AutoAttack ~= nil then
-		AutoAttack = flags.AutoAttack
-	end
-
-	if flags.Range ~= nil then
-		AttackRange = flags.Range
-	end
-
-	if flags.Cooldown ~= nil then
-		AttackCooldown = flags.Cooldown
-	end
-
-	if flags.WeaponMode ~= nil then
-		if typeof(flags.WeaponMode) == "table" then
-			WeaponMode = flags.WeaponMode[1]
-		else
-			WeaponMode = flags.WeaponMode
-		end
-	end
-
-	if flags.WalkSpeed ~= nil then
-		WalkSpeed = flags.WalkSpeed
-	end
-
-	if flags.MobESP ~= nil then
-		MobESP = flags.MobESP
-		if MobESP then
-			enableMobESP()
-		else
-			disableMobESP()
-		end
-	end
-
-	if flags.MiscESP ~= nil then
-		MiscESP = flags.MiscESP
-		if MiscESP then
-			enableMiscESP()
-		else
-			disableMiscESP()
-		end
-	end
-
-   if humanoid then
-	humanoid.WalkSpeed = WalkSpeed
-end
-	
-end
-
--------------------------------------------------
 -- UI
 -------------------------------------------------
 
@@ -927,13 +871,6 @@ GuiTab:CreateButton({
 	end
 })
 
-GuiTab:CreateButton({
-	Name = "Save Config",
-	Callback = function()
-		Rayfield:SaveConfiguration()
-	end
-})
-
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.ResetOnSpawn = false
@@ -1067,9 +1004,3 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
-Rayfield:LoadConfiguration()
-
-task.wait(1)
-
-ApplyConfig()
