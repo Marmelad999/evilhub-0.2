@@ -1,4 +1,4 @@
---// EvilHub 0.450
+--// EvilHub 0.451
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -1004,3 +1004,21 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
+
+Rayfield:LoadConfiguration()
+
+task.defer(function()
+
+    AutoAttack = Rayfield.Flags.AutoAttack or false
+    WeaponMode = Rayfield.Flags.WeaponMode or "Ranged"
+    AttackRange = Rayfield.Flags.Range or 10
+    AttackCooldown = Rayfield.Flags.Cooldown or 0.15
+    WalkSpeed = Rayfield.Flags.WalkSpeed or 16
+    CFspeed = Rayfield.Flags.FlySpeed or 50
+    MobESP = Rayfield.Flags.MobESP or false
+    MiscESP = Rayfield.Flags.MiscESP or false
+
+    if MobESP then enableMobESP() end
+    if MiscESP then enableMiscESP() end
+
+end)
