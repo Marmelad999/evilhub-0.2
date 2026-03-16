@@ -1,4 +1,4 @@
---// EvilHub 0.38
+--// EvilHub 0.385
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -51,25 +51,6 @@ local WalkSpeed = 16
 local CFFly = false
 local CFspeed = 50
 local CFloop = nil
-
--- Keybind подключение здесь
-local UserInputService = game:GetService("UserInputService")
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.KeyCode == Enum.KeyCode.G then
-	AutoAttack = not AutoAttack
-	Rayfield:Notify({
-		Title = "EvilHub",
-		Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
-		Duration = 3
-	})
-end
-
-if input.KeyCode == Enum.KeyCode.F then
-	toggleCFrameFly()
-end
-end)
-
 local MobESP = false
 local MiscESP = false
 
@@ -700,6 +681,12 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
+-- MOVEMENT TAB
+-------------------------------------------------
+
+local MovementTab = Window:CreateTab("Movement",4483362458)
+
+-------------------------------------------------
 -- UI
 -------------------------------------------------
 
@@ -746,8 +733,8 @@ CombatTab:CreateSlider({
 	end
 })
 
-CombatTab:CreateSlider({
-	Name = "WalkSpeed",
+MovementTab:CreateSlider({
+	Name = "Walk Speed",
 	Range = {16,100},
 	Increment = 1,
 	CurrentValue = 16,
@@ -757,9 +744,9 @@ CombatTab:CreateSlider({
 	end
 })
 
-CombatTab:CreateSlider({
+MovementTab:CreateSlider({
 	Name = "Fly Speed",
-	Range = {10,200},
+	Range = {1,200},
 	Increment = 5,
 	CurrentValue = 50,
 	Flag = "FlySpeed",
@@ -767,7 +754,6 @@ CombatTab:CreateSlider({
 		CFspeed = v
 	end
 })
-
 -------------------------------------------------
 
 local VisualTab = Window:CreateTab("Visuals",4483362458)
@@ -977,6 +963,32 @@ game:GetService("RunService").RenderStepped:Connect(function()
         lastHit = newHit
         newHit = nil
     end
+end)
+
+-------------------------------------------------
+-- KEYBINDS
+-------------------------------------------------
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+
+	if gameProcessed then return end
+
+	if input.KeyCode == Enum.KeyCode.G then
+
+		AutoAttack = not AutoAttack
+
+		Rayfield:Notify({
+			Title = "EvilHub",
+			Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
+			Duration = 3
+		})
+
+	end
+
+	if input.KeyCode == Enum.KeyCode.F then
+		toggleCFrameFly()
+	end
+
 end)
 
 -------------------------------------------------
