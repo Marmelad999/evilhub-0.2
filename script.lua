@@ -43,17 +43,6 @@ local AttackCooldown = 0.15
 local WeaponMode = "Ranged"
 
 local WalkSpeed = 16
-
--------------------------------------------------
--- CFRAME FLY
--------------------------------------------------
-
-local CFFly = false
-local CFspeed = 50
-local CFloop = nil
-local MobESP = false
-local MiscESP = false
-
 local MobESPObjects = {}
 local MiscESPObjects = {}
 
@@ -107,70 +96,6 @@ end
 
 end)
 
--------------------------------------------------
--- CFRAME FLY SYSTEM
--------------------------------------------------
-
-local function toggleCFrameFly()
-
-	CFFly = not CFFly
-
-	local head = character:FindFirstChild("Head")
-	if not head then return end
-
-	humanoid.PlatformStand = CFFly
-	head.Anchored = CFFly
-
-	if CFFly then
-
-		if CFloop then
-			CFloop:Disconnect()
-		end
-
-		CFloop = RunService.Heartbeat:Connect(function(dt)
-
-			local moveDirection = humanoid.MoveDirection * (CFspeed * dt)
-
-			local headCFrame = head.CFrame
-			local camera = workspace.CurrentCamera
-			local cameraCFrame = camera.CFrame
-
-			local cameraOffset = headCFrame:ToObjectSpace(cameraCFrame).Position
-			cameraCFrame = cameraCFrame * CFrame.new(-cameraOffset.X,-cameraOffset.Y,-cameraOffset.Z + 1)
-
-			local cameraPosition = cameraCFrame.Position
-			local headPosition = headCFrame.Position
-
-			local objectSpaceVelocity =
-				CFrame.new(cameraPosition,Vector3.new(headPosition.X,cameraPosition.Y,headPosition.Z))
-				:VectorToObjectSpace(moveDirection)
-
-			head.CFrame =
-				CFrame.new(headPosition) *
-				(cameraCFrame - cameraPosition) *
-				CFrame.new(objectSpaceVelocity)
-
-		end)
-
-	else
-
-		if CFloop then
-			CFloop:Disconnect()
-			CFloop = nil
-		end
-
-		humanoid.PlatformStand = false
-		head.Anchored = false
-
-	end
-
-	Rayfield:Notify({
-		Title = "EvilHub",
-		Content = "CFrameFly: "..(CFFly and "ON" or "OFF"),
-		Duration = 3
-	})
-
-end
 
 -------------------------------------------------
 -- AUTO ATTACK
@@ -748,16 +673,6 @@ MovementTab:CreateSlider({
 	end
 })
 
-MovementTab:CreateSlider({
-	Name = "Fly Speed | PRESS [F] | DONT USE SHIFTLOCK | RISKY",
-	Range = {1,200},
-	Increment = 5,
-	CurrentValue = 50,
-	Flag = "FlySpeed",
-	Callback = function(v)
-		CFspeed = v
-	end
-})
 -------------------------------------------------
 
 local VisualTab = Window:CreateTab("Visuals",4483362458)
@@ -989,10 +904,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 			Duration = 3
 		})
 
-	end
-
-	if input.KeyCode == Enum.KeyCode.F then
-		toggleCFrameFly()
 	end
 
 end)
