@@ -1,4 +1,4 @@
---// EvilHub 0.451
+--// EvilHub 0.452
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -94,8 +94,12 @@ task.spawn(function()
 	while true do
 
 		if humanoid then
-			humanoid.WalkSpeed = WalkSpeed
-		end
+	if typeof(WalkSpeed) == "table" then
+		WalkSpeed = WalkSpeed[1]
+	end
+
+	humanoid.WalkSpeed = tonumber(WalkSpeed) or 16
+end
 
 		task.wait(0.05)
 
