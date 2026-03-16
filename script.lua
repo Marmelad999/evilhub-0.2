@@ -1,4 +1,4 @@
---// EvilHub 0.450
+--// EvilHub 0.5
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -45,6 +45,78 @@ local WeaponMode = "Ranged"
 local WalkSpeed = 16
 local MobESPObjects = {}
 local MiscESPObjects = {}
+
+-------------------------------------------------
+-- CONFIG
+-------------------------------------------------
+
+local HttpService = game:GetService("HttpService")
+
+local ConfigFile = "EvilHub_Config.json"
+
+local DefaultConfig = {
+
+	AutoAttack = false,
+	AttackRange = 20,
+	AttackCooldown = 0.15,
+	WeaponMode = "Ranged",
+
+	WalkSpeed = 16,
+
+	MobESP = false,
+	MiscESP = false
+
+}
+
+local Config = table.clone(DefaultConfig)
+
+local function LoadConfig()
+
+	if not isfile(ConfigFile) then
+		writefile(ConfigFile, HttpService:JSONEncode(DefaultConfig))
+		return
+	end
+
+	local success,data = pcall(function()
+		return HttpService:JSONDecode(readfile(ConfigFile))
+	end)
+
+	if success and typeof(data) == "table" then
+
+		for key,value in pairs(DefaultConfig) do
+
+			local loaded = data[key]
+
+			if typeof(loaded) == typeof(value) then
+				Config[key] = loaded
+			end
+
+		end
+
+	end
+
+end
+
+local function SaveConfig()
+	writefile(ConfigFile, HttpService:JSONEncode(Config))
+end
+
+local function ApplyConfig()
+
+	AutoAttack = Config.AutoAttack
+	AttackRange = Config.AttackRange
+	AttackCooldown = Config.AttackCooldown
+	WeaponMode = Config.WeaponMode
+
+	WalkSpeed = Config.WalkSpeed
+
+	MobESP = Config.MobESP
+	MiscESP = Config.MiscESP
+
+end
+
+LoadConfig()
+ApplyConfig()
 
 -------------------------------------------------
 -- CHEST RARITY DATA
@@ -609,6 +681,20 @@ task.spawn(function()
 
 end)
 
+task.spawn(function()
+
+	task.wait(1)
+
+	if MobESP then
+		enableMobESP()
+	end
+
+	if MiscESP then
+		enableMiscESP()
+	end
+
+end)
+
 -------------------------------------------------
 -- UI
 -------------------------------------------------
@@ -623,54 +709,74 @@ local MovementTab = Window:CreateTab("Movement",4483362458)
 
 CombatTab:CreateToggle({
 	Name = "Auto Attack",
-	CurrentValue = false,
+	CurrentValue = Config.AutoAttack,
 	Flag = "AutoAttack",
 	Callback = function(v)
-		AutoAttack = v
-	end
+
+	AutoAttack = v
+	Config.AutoAttack = v
+	SaveConfig()
+
+end
 })
 
 CombatTab:CreateDropdown({
 	Name = "Weapon Mode",
 	Options = {"Ranged","Melee"},
-	CurrentOption = {"Ranged"},
+	CurrentOption = {Config.WeaponMode},
 	Flag = "WeaponMode",
 	Callback = function(v)
-		WeaponMode = v[1]
-	end
+
+	WeaponMode = v[1]
+	Config.WeaponMode = v[1]
+	SaveConfig()
+
+end
 })
 
 CombatTab:CreateSlider({
 	Name = "Attack Range",
 	Range = {5,100},
 	Increment = 1,
-	CurrentValue = 10,
+	CurrentValue = Config.AttackRange,
 	Flag = "Range",
 	Callback = function(v)
-		AttackRange = v
-	end
+
+	AttackRange = v
+	Config.AttackRange = v
+	SaveConfig()
+
+end
 })
 
 CombatTab:CreateSlider({
 	Name = "Attack Cooldown",
 	Range = {0.01,1},
 	Increment = 0.01,
-	CurrentValue = 0.15,
+	CurrentValue = Config.AttackCooldown,
 	Flag = "Cooldown",
 	Callback = function(v)
-		AttackCooldown = v
-	end
+
+	AttackCooldown = v
+	Config.AttackCooldown = v
+	SaveConfig()
+
+end
 })
 
 MovementTab:CreateSlider({
 	Name = "Walk Speed",
 	Range = {16,100},
 	Increment = 1,
-	CurrentValue = 16,
+	CurrentValue = Config.WalkSpeed,
 	Flag = "WalkSpeed",
 	Callback = function(v)
-		WalkSpeed = v
-	end
+
+	WalkSpeed = v
+	Config.WalkSpeed = v
+	SaveConfig()
+
+end
 })
 
 -------------------------------------------------
@@ -679,36 +785,40 @@ local VisualTab = Window:CreateTab("Visuals",4483362458)
 
 VisualTab:CreateToggle({
 	Name = "Mob ESP",
-	CurrentValue = false,
+	CurrentValue = Config.MobESP,
 	Flag = "MobESP",
 	Callback = function(v)
 
-		MobESP = v
+	MobESP = v
+	Config.MobESP = v
+	SaveConfig()
 
-		if v then
-			enableMobESP()
-		else
-			disableMobESP()
-		end
-
+	if v then
+		enableMobESP()
+	else
+		disableMobESP()
 	end
+
+end
 })
 
 VisualTab:CreateToggle({
 	Name = "Misc ESP",
-	CurrentValue = false,
+	CurrentValue = Config.MiscESP,
 	Flag = "MiscESP",
 	Callback = function(v)
 
-		MiscESP = v
+	MiscESP = v
+	Config.MiscESP = v
+	SaveConfig()
 
-		if v then
-			enableMiscESP()
-		else
-			disableMiscESP()
-		end
-
+	if v then
+		enableMiscESP()
+	else
+		disableMiscESP()
 	end
+
+end
 })
 
 
