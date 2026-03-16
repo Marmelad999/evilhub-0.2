@@ -1,4 +1,4 @@
---// EvilHub 0.4
+--// EvilHub 0.41
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -745,7 +745,7 @@ MovementTab:CreateSlider({
 })
 
 MovementTab:CreateSlider({
-	Name = "Fly Speed",
+	Name = "Fly Speed | PRESS "F" | DONT USE SHIFTLOCK | RISKY",
 	Range = {1,200},
 	Increment = 5,
 	CurrentValue = 50,
