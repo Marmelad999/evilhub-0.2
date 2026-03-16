@@ -1,9 +1,9 @@
---// EvilHub 0.36
+--// EvilHub 0.38
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.36",
+	Name = "EvilHub 0.38",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -18,6 +18,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local Characters = Workspace:WaitForChild("Characters")
 local Tower = Workspace:WaitForChild("Tower")
@@ -43,20 +44,30 @@ local WeaponMode = "Ranged"
 
 local WalkSpeed = 16
 
+-------------------------------------------------
+-- CFRAME FLY
+-------------------------------------------------
+
+local CFFly = false
+local CFspeed = 50
+local CFloop = nil
+
 -- Keybind подключение здесь
 local UserInputService = game:GetService("UserInputService")
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-    if input.UserInputType == Enum.UserInputType.Keyboard then
-        if input.KeyCode == Enum.KeyCode.G then
-            AutoAttack = not AutoAttack
-            Rayfield:Notify({
-                Title = "EvilHub",
-                Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
-                Duration = 3
-            })
-        end
-    end
+    if input.KeyCode == Enum.KeyCode.G then
+	AutoAttack = not AutoAttack
+	Rayfield:Notify({
+		Title = "EvilHub",
+		Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
+		Duration = 3
+	})
+end
+
+if input.KeyCode == Enum.KeyCode.F then
+	toggleCFrameFly()
+end
 end)
 
 local MobESP = false
@@ -110,6 +121,71 @@ task.spawn(function()
 	end
 
 end)
+
+-------------------------------------------------
+-- CFRAME FLY SYSTEM
+-------------------------------------------------
+
+local function toggleCFrameFly()
+
+	CFFly = not CFFly
+
+	local head = character:FindFirstChild("Head")
+	if not head then return end
+
+	humanoid.PlatformStand = CFFly
+	head.Anchored = CFFly
+
+	if CFFly then
+
+		if CFloop then
+			CFloop:Disconnect()
+		end
+
+		CFloop = RunService.Heartbeat:Connect(function(dt)
+
+			local moveDirection = humanoid.MoveDirection * (CFspeed * dt)
+
+			local headCFrame = head.CFrame
+			local camera = workspace.CurrentCamera
+			local cameraCFrame = camera.CFrame
+
+			local cameraOffset = headCFrame:ToObjectSpace(cameraCFrame).Position
+			cameraCFrame = cameraCFrame * CFrame.new(-cameraOffset.X,-cameraOffset.Y,-cameraOffset.Z + 1)
+
+			local cameraPosition = cameraCFrame.Position
+			local headPosition = headCFrame.Position
+
+			local objectSpaceVelocity =
+				CFrame.new(cameraPosition,Vector3.new(headPosition.X,cameraPosition.Y,headPosition.Z))
+				:VectorToObjectSpace(moveDirection)
+
+			head.CFrame =
+				CFrame.new(headPosition) *
+				(cameraCFrame - cameraPosition) *
+				CFrame.new(objectSpaceVelocity)
+
+		end)
+
+	else
+
+		if CFloop then
+			CFloop:Disconnect()
+			CFloop = nil
+		end
+
+		humanoid.PlatformStand = false
+		head.Anchored = false
+
+	end
+
+	Rayfield:Notify({
+		Title = "EvilHub",
+		Content = "CFrameFly: "..(CFFly and "ON" or "OFF"),
+		Duration = 3
+	})
+
+end
 
 -------------------------------------------------
 -- AUTO ATTACK
@@ -681,6 +757,17 @@ CombatTab:CreateSlider({
 	end
 })
 
+CombatTab:CreateSlider({
+	Name = "Fly Speed",
+	Range = {10,200},
+	Increment = 5,
+	CurrentValue = 50,
+	Flag = "FlySpeed",
+	Callback = function(v)
+		CFspeed = v
+	end
+})
+
 -------------------------------------------------
 
 local VisualTab = Window:CreateTab("Visuals",4483362458)
@@ -895,7 +982,7 @@ end)
 -------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.36",
+	Title = "EvilHub",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
