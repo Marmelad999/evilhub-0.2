@@ -681,16 +681,16 @@ task.spawn(function()
 end)
 
 -------------------------------------------------
--- MOVEMENT TAB
--------------------------------------------------
-
-local MovementTab = Window:CreateTab("Movement",4483362458)
-
--------------------------------------------------
 -- UI
 -------------------------------------------------
 
 local CombatTab = Window:CreateTab("Combat",4483362458)
+
+-------------------------------------------------
+-- MOVEMENT TAB
+-------------------------------------------------
+
+local MovementTab = Window:CreateTab("Movement",4483362458)
 
 CombatTab:CreateToggle({
 	Name = "Auto Attack",
