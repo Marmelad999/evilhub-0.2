@@ -1,9 +1,9 @@
---// EvilHub 0.355
+--// EvilHub 0.36
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.31",
+	Name = "EvilHub 0.36",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -39,6 +39,7 @@ local PopupDamage = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("Pop
 local AutoAttack = false
 local AttackRange = 20
 local AttackCooldown = 0.15
+local WeaponMode = "Ranged"
 
 local WalkSpeed = 16
 
@@ -168,10 +169,20 @@ task.spawn(function()
 
 				if mobHRP then
 
-					local dir = getDirectionString(mobHRP)
+					if WeaponMode == "Ranged" then
 
-					AttackRemote:FireServer(5,1,mob)
-					AttackRemote:FireServer(4,1,dir)
+		local dir = getDirectionString(mobHRP)
+
+		AttackRemote:FireServer(5,1,mob)
+		AttackRemote:FireServer(4,1,dir)
+
+	elseif WeaponMode == "Melee" then
+
+		AttackRemote:FireServer(3,1)
+		AttackRemote:FireServer(2,1,mob)
+		AttackRemote:FireServer(1,1)
+
+	end
 
 				end
 
@@ -627,6 +638,16 @@ CombatTab:CreateToggle({
 	end
 })
 
+CombatTab:CreateDropdown({
+	Name = "Weapon Mode",
+	Options = {"Ranged","Melee"},
+	CurrentOption = {"Ranged"},
+	Flag = "WeaponMode",
+	Callback = function(v)
+		WeaponMode = v[1]
+	end
+})
+
 CombatTab:CreateSlider({
 	Name = "Attack Range",
 	Range = {5,100},
@@ -874,7 +895,7 @@ end)
 -------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.31",
+	Title = "EvilHub 0.36",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
