@@ -1,4 +1,4 @@
---// EvilHub 0.452
+--// EvilHub 0.450
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -44,13 +44,6 @@ local WeaponMode = "Ranged"
 
 local WalkSpeed = 16
 
--- FIX TYPES (Rayfield config)
-local function num(v,default)
-	if typeof(v) == "table" then
-		v = v[1]
-	end
-	return tonumber(v) or default
-end
 -------------------------------------------------
 -- CFRAME FLY
 -------------------------------------------------
@@ -105,7 +98,7 @@ task.spawn(function()
 		WalkSpeed = WalkSpeed[1]
 	end
 
-	humanoid.WalkSpeed = num(WalkSpeed,16)
+	humanoid.WalkSpeed = tonumber(WalkSpeed) or 16
 end
 
 		task.wait(0.05)
@@ -215,9 +208,9 @@ local function getMobs()
 
 		local dist = (mobHRP.Position - hrp.Position).Magnitude
 
-		if dist <= num(AttackRange,100) then
-	table.insert(mobs,mob)
-end
+		if dist <= AttackRange then
+			table.insert(mobs,mob)
+		end
 
 	end
 
@@ -258,7 +251,7 @@ task.spawn(function()
 
 		end
 
-		task.wait(num(AttackCooldown,0.1))
+		task.wait(AttackCooldown)
 
 	end
 
@@ -762,7 +755,7 @@ MovementTab:CreateSlider({
 	CurrentValue = 50,
 	Flag = "FlySpeed",
 	Callback = function(v)
-		CFspeed = num(v,150)
+		CFspeed = v
 	end
 })
 -------------------------------------------------
@@ -1011,21 +1004,3 @@ Rayfield:Notify({
 	Content = "Loaded Successfully",
 	Duration = 5
 })
-
-Rayfield:LoadConfiguration()
-
-task.defer(function()
-
-    AutoAttack = Rayfield.Flags.AutoAttack or false
-    WeaponMode = Rayfield.Flags.WeaponMode or "Ranged"
-    AttackRange = Rayfield.Flags.Range or 10
-    AttackCooldown = Rayfield.Flags.Cooldown or 0.15
-    WalkSpeed = Rayfield.Flags.WalkSpeed or 16
-    CFspeed = Rayfield.Flags.FlySpeed or 50
-    MobESP = Rayfield.Flags.MobESP or false
-    MiscESP = Rayfield.Flags.MiscESP or false
-
-    if MobESP then enableMobESP() end
-    if MiscESP then enableMiscESP() end
-
-end)
