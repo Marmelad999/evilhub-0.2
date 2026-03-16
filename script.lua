@@ -1,9 +1,9 @@
---// EvilHub 0.361
+--// EvilHub 0.41
 
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source"))()
 
 local Window = Rayfield:CreateWindow({
-	Name = "EvilHub 0.31",
+	Name = "EvilHub 0.4",
 	LoadingTitle = "EvilHub",
 	LoadingSubtitle = "Loading...",
 	ConfigurationSaving = {
@@ -18,6 +18,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local Characters = Workspace:WaitForChild("Characters")
 local Tower = Workspace:WaitForChild("Tower")
@@ -39,25 +40,17 @@ local PopupDamage = ReplicatedStorage:WaitForChild("UIEvents"):WaitForChild("Pop
 local AutoAttack = false
 local AttackRange = 20
 local AttackCooldown = 0.15
+local WeaponMode = "Ranged"
 
 local WalkSpeed = 16
 
--- Keybind подключение здесь
-local UserInputService = game:GetService("UserInputService")
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if input.UserInputType == Enum.UserInputType.Keyboard then
-        if input.KeyCode == Enum.KeyCode.G then
-            AutoAttack = not AutoAttack
-            Rayfield:Notify({
-                Title = "EvilHub",
-                Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
-                Duration = 3
-            })
-        end
-    end
-end)
+-------------------------------------------------
+-- CFRAME FLY
+-------------------------------------------------
 
+local CFFly = false
+local CFspeed = 50
+local CFloop = nil
 local MobESP = false
 local MiscESP = false
 
@@ -109,6 +102,71 @@ task.spawn(function()
 	end
 
 end)
+
+-------------------------------------------------
+-- CFRAME FLY SYSTEM
+-------------------------------------------------
+
+local function toggleCFrameFly()
+
+	CFFly = not CFFly
+
+	local head = character:FindFirstChild("Head")
+	if not head then return end
+
+	humanoid.PlatformStand = CFFly
+	head.Anchored = CFFly
+
+	if CFFly then
+
+		if CFloop then
+			CFloop:Disconnect()
+		end
+
+		CFloop = RunService.Heartbeat:Connect(function(dt)
+
+			local moveDirection = humanoid.MoveDirection * (CFspeed * dt)
+
+			local headCFrame = head.CFrame
+			local camera = workspace.CurrentCamera
+			local cameraCFrame = camera.CFrame
+
+			local cameraOffset = headCFrame:ToObjectSpace(cameraCFrame).Position
+			cameraCFrame = cameraCFrame * CFrame.new(-cameraOffset.X,-cameraOffset.Y,-cameraOffset.Z + 1)
+
+			local cameraPosition = cameraCFrame.Position
+			local headPosition = headCFrame.Position
+
+			local objectSpaceVelocity =
+				CFrame.new(cameraPosition,Vector3.new(headPosition.X,cameraPosition.Y,headPosition.Z))
+				:VectorToObjectSpace(moveDirection)
+
+			head.CFrame =
+				CFrame.new(headPosition) *
+				(cameraCFrame - cameraPosition) *
+				CFrame.new(objectSpaceVelocity)
+
+		end)
+
+	else
+
+		if CFloop then
+			CFloop:Disconnect()
+			CFloop = nil
+		end
+
+		humanoid.PlatformStand = false
+		head.Anchored = false
+
+	end
+
+	Rayfield:Notify({
+		Title = "EvilHub",
+		Content = "CFrameFly: "..(CFFly and "ON" or "OFF"),
+		Duration = 3
+	})
+
+end
 
 -------------------------------------------------
 -- AUTO ATTACK
@@ -168,10 +226,20 @@ task.spawn(function()
 
 				if mobHRP then
 
-					local dir = getDirectionString(mobHRP)
+					if WeaponMode == "Ranged" then
 
-					AttackRemote:FireServer(5,1,mob)
-					AttackRemote:FireServer(4,1,dir)
+		local dir = getDirectionString(mobHRP)
+
+		AttackRemote:FireServer(5,1,mob)
+		AttackRemote:FireServer(4,1,dir)
+
+	elseif WeaponMode == "Melee" then
+
+		AttackRemote:FireServer(3,1)
+		AttackRemote:FireServer(2,1,mob)
+		AttackRemote:FireServer(1,1)
+
+	end
 
 				end
 
@@ -224,7 +292,7 @@ local function createESP(part,text,color,isBoss)
 
 	-- BOSS STYLE
 	if isBoss then
-		label.Font = Enum.Font.Arcade
+		label.Font = Enum.Font.Gotham
 	else
 		label.Font = Enum.Font.GothamBold
 	end
@@ -618,12 +686,28 @@ end)
 
 local CombatTab = Window:CreateTab("Combat",4483362458)
 
+-------------------------------------------------
+-- MOVEMENT TAB
+-------------------------------------------------
+
+local MovementTab = Window:CreateTab("Movement",4483362458)
+
 CombatTab:CreateToggle({
 	Name = "Auto Attack",
 	CurrentValue = false,
 	Flag = "AutoAttack",
 	Callback = function(v)
 		AutoAttack = v
+	end
+})
+
+CombatTab:CreateDropdown({
+	Name = "Weapon Mode",
+	Options = {"Ranged","Melee"},
+	CurrentOption = {"Ranged"},
+	Flag = "WeaponMode",
+	Callback = function(v)
+		WeaponMode = v[1]
 	end
 })
 
@@ -649,8 +733,8 @@ CombatTab:CreateSlider({
 	end
 })
 
-CombatTab:CreateSlider({
-	Name = "WalkSpeed",
+MovementTab:CreateSlider({
+	Name = "Walk Speed",
 	Range = {16,100},
 	Increment = 1,
 	CurrentValue = 16,
@@ -660,6 +744,16 @@ CombatTab:CreateSlider({
 	end
 })
 
+MovementTab:CreateSlider({
+	Name = "Fly Speed | PRESS [F] | DONT USE SHIFTLOCK | RISKY",
+	Range = {1,200},
+	Increment = 5,
+	CurrentValue = 50,
+	Flag = "FlySpeed",
+	Callback = function(v)
+		CFspeed = v
+	end
+})
 -------------------------------------------------
 
 local VisualTab = Window:CreateTab("Visuals",4483362458)
@@ -872,9 +966,35 @@ game:GetService("RunService").RenderStepped:Connect(function()
 end)
 
 -------------------------------------------------
+-- KEYBINDS
+-------------------------------------------------
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+
+	if gameProcessed then return end
+
+	if input.KeyCode == Enum.KeyCode.G then
+
+		AutoAttack = not AutoAttack
+
+		Rayfield:Notify({
+			Title = "EvilHub",
+			Content = "AutoAttack: " .. (AutoAttack and "ON" or "OFF"),
+			Duration = 3
+		})
+
+	end
+
+	if input.KeyCode == Enum.KeyCode.F then
+		toggleCFrameFly()
+	end
+
+end)
+
+-------------------------------------------------
 
 Rayfield:Notify({
-	Title = "EvilHub 0.31",
+	Title = "EvilHub",
 	Content = "Loaded Successfully",
 	Duration = 5
 })
