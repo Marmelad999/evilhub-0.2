@@ -1,4 +1,4 @@
---// EvilHub 0.385
+--// EvilHub 0.386
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -125,7 +125,13 @@ local function toggleCFrameFly()
 
 		CFloop = RunService.Heartbeat:Connect(function(dt)
 
-			local moveDirection = humanoid.MoveDirection * (CFspeed * dt)
+			local moveDir = humanoid.MoveDirection
+
+if moveDir.Magnitude < 0.1 then
+	moveDir = Vector3.zero
+end
+
+local moveDirection = moveDir * (CFspeed * dt)
 
 			local headCFrame = head.CFrame
 			local camera = workspace.CurrentCamera
