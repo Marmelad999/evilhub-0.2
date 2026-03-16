@@ -1,4 +1,4 @@
---// EvilHub 0.355
+--// EvilHub 0.36
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
