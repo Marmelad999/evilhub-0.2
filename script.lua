@@ -1,4 +1,4 @@
---// EvilHub 0.45
+--// EvilHub 0.451
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
@@ -701,7 +701,11 @@ local function ApplyConfig()
 	end
 
 	if flags.WeaponMode ~= nil then
-		WeaponMode = flags.WeaponMode
+		if typeof(flags.WeaponMode) == "table" then
+			WeaponMode = flags.WeaponMode[1]
+		else
+			WeaponMode = flags.WeaponMode
+		end
 	end
 
 	if flags.WalkSpeed ~= nil then
@@ -710,7 +714,6 @@ local function ApplyConfig()
 
 	if flags.MobESP ~= nil then
 		MobESP = flags.MobESP
-
 		if MobESP then
 			enableMobESP()
 		else
@@ -720,7 +723,6 @@ local function ApplyConfig()
 
 	if flags.MiscESP ~= nil then
 		MiscESP = flags.MiscESP
-
 		if MiscESP then
 			enableMiscESP()
 		else
@@ -728,6 +730,10 @@ local function ApplyConfig()
 		end
 	end
 
+   if humanoid then
+	humanoid.WalkSpeed = WalkSpeed
+end
+	
 end
 
 -------------------------------------------------
